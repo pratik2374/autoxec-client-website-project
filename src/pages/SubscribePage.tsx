@@ -36,6 +36,7 @@ export function SubscribePage() {
         email: email.trim(),
         role,
         privacyAccepted: agree,
+        source: 'subscribe_page',
       })
       showToast('Subscribed to Intelligence Brief!')
       setFirst('')

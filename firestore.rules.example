@@ -8,12 +8,17 @@ service cloud.firestore {
           ['firstName', 'email', 'role', 'privacyAccepted', 'source']
         )
         && request.resource.data.firstName is string
-        && request.resource.data.firstName.size() > 0
         && request.resource.data.email is string
         && request.resource.data.email.size() > 3
         && request.resource.data.role is string
         && request.resource.data.privacyAccepted == true
-        && request.resource.data.source == 'subscribe_page';
+        && (request.resource.data.source == 'subscribe_page'
+            || request.resource.data.source == 'sidebar')
+        && (
+          (request.resource.data.source == 'subscribe_page'
+            && request.resource.data.firstName.size() > 0)
+          || request.resource.data.source == 'sidebar'
+        );
       allow read, update, delete: if false;
     }
   }

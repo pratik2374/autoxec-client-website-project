@@ -318,13 +318,14 @@ a.nav-btn {
   gap: 1px;
   background: var(--border);
   border-bottom: 1px solid var(--border);
-  max-height: 500px;
+  /* Default stretch: carousel fills the full left grid cell so there is no empty band under the image
+     when the sidebar column is taller than min-height. */
+  align-items: stretch;
 }
 
 @media (max-width: 960px) {
   .hero {
     grid-template-columns: 1fr;
-    max-height: none;
   }
 }
 
@@ -337,10 +338,13 @@ a.nav-btn {
 
 /* Hero carousel (Autocar-style rotating lead) */
 .hero-main.hero-carousel {
-  height: min(50vh, 500px);
-  max-height: 500px;
+  width: 100%;
   min-height: min(50vh, 500px);
+  /* Grow with the grid row (sidebar height) so slides + cover image fill the cell */
+  height: 100%;
   cursor: default;
+  align-self: stretch;
+  box-sizing: border-box;
 }
 
 .hero-carousel .hero-slides {
@@ -368,21 +372,41 @@ a.nav-btn {
   display: block;
 }
 
+/* Stronger, smoother “solid at bottom” scrim so type reads like reference — no empty slab */
 .hero-carousel .hero-overlay {
   z-index: 2;
   pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(8, 6, 15, 0.98) 0%,
+    rgba(8, 6, 15, 0.92) 8%,
+    rgba(8, 6, 15, 0.75) 22%,
+    rgba(8, 6, 15, 0.4) 42%,
+    rgba(17, 13, 30, 0.12) 62%,
+    transparent 85%
+  );
 }
 
+/* Must stay absolute + bottom — relative was pinning copy to the top and leaving a dead band below */
 .hero-content.hero-content--floating {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 3;
   pointer-events: none;
+  padding: 20px 28px 26px;
 }
 
 .hero-content.hero-content--floating .hero-cat-link,
 .hero-content.hero-content--floating .hero-story-block,
 .hero-content.hero-content--floating .hero-dots {
   pointer-events: auto;
+}
+
+/* Slightly brighter meta on the dark scrim (second-reference legibility) */
+.hero-content.hero-content--floating .hero-meta {
+  color: rgba(203, 194, 230, 0.95);
 }
 
 .hero-story-block {
@@ -1111,6 +1135,21 @@ a.trending-item {
   line-height: 1.5;
 }
 
+.newsletter-sidebar-consent {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.newsletter-sidebar-consent input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
 .newsletter-input {
   width: 100%;
   background: var(--bg);
@@ -1148,6 +1187,12 @@ a.trending-item {
 
 .newsletter-btn:hover {
   filter: brightness(1.06);
+}
+
+.newsletter-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  filter: none;
 }
 
 .stats-grid {

@@ -3,11 +3,15 @@ import { getFirestoreDb } from './config'
 
 export const NEWSLETTER_COLLECTION = 'intelligence_brief_subscribers'
 
+export type NewsletterSignupSource = 'subscribe_page' | 'sidebar'
+
 export type NewsletterSignupPayload = {
   firstName: string
   email: string
   role: string
   privacyAccepted: boolean
+  /** Where the user signed up (stored in Firestore for segmentation). */
+  source?: NewsletterSignupSource
 }
 
 /**
@@ -17,12 +21,13 @@ export type NewsletterSignupPayload = {
  */
 export async function saveNewsletterSignup(payload: NewsletterSignupPayload): Promise<void> {
   const db = getFirestoreDb()
+  const source: NewsletterSignupSource = payload.source ?? 'subscribe_page'
   await addDoc(collection(db, NEWSLETTER_COLLECTION), {
     firstName: payload.firstName.trim(),
     email: payload.email.trim().toLowerCase(),
-    role: payload.role,
+    role: payload.role.trim(),
     privacyAccepted: payload.privacyAccepted,
-    source: 'subscribe_page',
+    source,
     createdAt: serverTimestamp(),
   })
 }

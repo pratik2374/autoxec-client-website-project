@@ -1,11 +1,53 @@
+import type { FormEvent } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { TRENDING, TOPICS } from '../data'
 import { articleUrl } from '../lib/site'
 import { useToast } from '../context/ToastContext'
+import { isFirebaseConfigured } from '../firebase/config'
+import { saveNewsletterSignup } from '../firebase/newsletter'
 
 export function SidebarWidgets() {
   const navigate = useNavigate()
   const showToast = useToast()
+  const [briefEmail, setBriefEmail] = useState('')
+  const [briefAgree, setBriefAgree] = useState(false)
+  const [briefSubmitting, setBriefSubmitting] = useState(false)
+
+  const submitIntelligenceBrief = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!briefEmail.trim().includes('@')) {
+      showToast('Enter a valid email address.')
+      return
+    }
+    if (!briefAgree) {
+      showToast('Accept the Privacy Policy to subscribe.')
+      return
+    }
+    if (!isFirebaseConfigured()) {
+      showToast('Newsletter backend is not configured. Add Firebase keys to .env')
+      return
+    }
+    setBriefSubmitting(true)
+    try {
+      await saveNewsletterSignup({
+        firstName: '',
+        email: briefEmail.trim(),
+        role: 'sidebar',
+        privacyAccepted: true,
+        source: 'sidebar',
+      })
+      showToast('Subscribed to Intelligence Brief!')
+      setBriefEmail('')
+      setBriefAgree(false)
+    } catch (err) {
+      console.error(err)
+      const msg = err instanceof Error ? err.message : 'Could not save subscription. Try again.'
+      showToast(msg.length > 80 ? 'Could not save subscription. Check console / Firestore rules.' : msg)
+    } finally {
+      setBriefSubmitting(false)
+    }
+  }
 
   return (
     <aside className="sidebar">
@@ -39,21 +81,39 @@ export function SidebarWidgets() {
       </div>
 
       <div className="sidebar-section">
-        <div className="newsletter-box">
+        <form className="newsletter-box" onSubmit={submitIntelligenceBrief}>
           <div className="newsletter-title condensed">Intelligence Brief</div>
           <div className="newsletter-desc">
             Weekly engineering analysis delivered to your inbox. No spec sheets. No opinion. Just verified technical
             intelligence.
           </div>
-          <input className="newsletter-input" placeholder="your@email.com" />
-          <button
-            type="button"
-            className="newsletter-btn condensed"
-            onClick={() => showToast('Subscribed to Intelligence Brief!')}
-          >
-            SUBSCRIBE FREE →
+          <input
+            className="newsletter-input"
+            placeholder="your@email.com"
+            type="email"
+            autoComplete="email"
+            value={briefEmail}
+            onChange={(ev) => setBriefEmail(ev.target.value)}
+            disabled={briefSubmitting}
+          />
+          <label className="newsletter-sidebar-consent">
+            <input
+              type="checkbox"
+              checked={briefAgree}
+              onChange={(ev) => setBriefAgree(ev.target.checked)}
+              disabled={briefSubmitting}
+            />
+            <span>
+              I agree to AutoXec&apos;s{' '}
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer">
+                Privacy Policy
+              </Link>
+            </span>
+          </label>
+          <button type="submit" className="newsletter-btn condensed" disabled={briefSubmitting}>
+            {briefSubmitting ? 'SUBMITTING…' : 'SUBSCRIBE FREE →'}
           </button>
-        </div>
+        </form>
       </div>
 
       <div className="sidebar-section">
