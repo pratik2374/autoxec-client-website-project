@@ -62,9 +62,13 @@ export function ArticleCard({ article, upvoted, onUpvote, onShare }: Props) {
         </div>
       </div>
       <div className="article-thumb" aria-hidden>
-        <div className="thumb-placeholder" style={{ background: article.thumbGradient }}>
-          {article.thumbLabel}
-        </div>
+        {article.imageUrl ? (
+          <img src={article.imageUrl} alt="" className="thumb-img" loading="lazy" decoding="async" />
+        ) : (
+          <div className="thumb-placeholder" style={{ background: article.thumbGradient }}>
+            {article.thumbLabel}
+          </div>
+        )}
       </div>
     </article>
   )

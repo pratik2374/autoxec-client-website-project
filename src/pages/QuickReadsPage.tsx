@@ -14,11 +14,9 @@ export function QuickReadsPage() {
         {STORIES.map((s) => (
           <Link key={s.slug} to={articleUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
             <div className="story-thumb">
-              <div className="story-bg" style={{ background: s.gradient }}>
+              <div className="story-bg story-bg--photo">
+                <img src={s.imageUrl} alt="" className="story-photo" loading="lazy" decoding="async" />
                 <div className="story-gradient" />
-                <div className="story-icon" aria-hidden>
-                  {s.icon}
-                </div>
                 <div className="story-text">{s.title}</div>
               </div>
             </div>

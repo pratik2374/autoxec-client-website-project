@@ -28,17 +28,95 @@ export const TICKER_ITEMS = [
   'Maruti Suzuki eVitara bookings open — ₹1 lakh token amount',
 ] as const
 
-export const HERO_MAIN = {
-  slug: 'mahindra-be-6e-800v-architecture-india',
-  category: 'LAUNCH ANALYSIS',
-  categoryClass: 'launch' as const,
-  title:
-    'Mahindra BE.6e: The 800V Architecture India Has Been Waiting For — And What It Actually Means For Real-World Charging',
-  author: 'PREETAM · AUTOXEC',
-  readTime: '8 MIN READ',
-  upvotes: '2.4K UPVOTES',
-  placeholder: 'MAHINDRA\nBE.6E',
+/** Category path segment for `/category/:slug` links from the hero badge. */
+export type HeroCategoryPath = 'ev' | 'launches' | 'engineering' | 'motorsport' | 'two-wheelers' | 'industry'
+
+export type HeroSlide = {
+  slug: string
+  category: string
+  categoryClass: 'ev' | 'launch' | 'engineering' | 'motorsport' | 'twowheeler' | 'industry'
+  categoryPath: HeroCategoryPath
+  title: string
+  author: string
+  readTime: string
+  upvotes: string
+  imageUrl: string
+  imageAlt: string
 }
+
+export const HERO_SLIDES: HeroSlide[] = [
+  {
+    slug: 'mahindra-be-6e-800v-architecture-india',
+    category: 'LAUNCH ANALYSIS',
+    categoryClass: 'launch',
+    categoryPath: 'launches',
+    title:
+      'Mahindra BE.6e: The 800V Architecture India Has Been Waiting For — And What It Actually Means For Real-World Charging',
+    author: 'PREETAM · AUTOXEC',
+    readTime: '8 MIN READ',
+    upvotes: '2.4K UPVOTES',
+    imageUrl:
+      'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=2000&q=85',
+    imageAlt: 'Modern car exterior studio light',
+  },
+  {
+    slug: 'ev-range-numbers-thermal-physics-india',
+    category: 'EV INTELLIGENCE',
+    categoryClass: 'ev',
+    categoryPath: 'ev',
+    title:
+      "Why India's EV Range Numbers Are Always 30% Lower Than Claimed — The Thermal Physics Explanation",
+    author: 'PREETAM · AUTOXEC',
+    readTime: '6 MIN READ',
+    upvotes: '1.8K UPVOTES',
+    imageUrl:
+      'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=2000&q=85',
+    imageAlt: 'Electric vehicle charging cable',
+  },
+  {
+    slug: 'kia-syros-platform-nios-engineering',
+    category: 'LAUNCH',
+    categoryClass: 'launch',
+    categoryPath: 'launches',
+    title:
+      'Kia Syros: Why the Platform Sharing With Nios Is the Most Interesting Engineering Decision Kia India Has Made',
+    author: 'PREETAM · AUTOXEC',
+    readTime: '8 MIN READ',
+    upvotes: '1.2K UPVOTES',
+    imageUrl:
+      'https://images.unsplash.com/photo-1494976388531-d085849cfcbf?auto=format&fit=crop&w=2000&q=85',
+    imageAlt: 'Car on coastal road',
+  },
+  {
+    slug: 'formula-bharat-2025-iit-bombay-monocoque',
+    category: 'MOTORSPORT',
+    categoryClass: 'motorsport',
+    categoryPath: 'motorsport',
+    title: "Formula Bharat 2025: IIT Bombay's Carbon Fibre Monocoque — A Technical Breakdown",
+    author: 'PREETAM · AUTOXEC',
+    readTime: '5 MIN READ',
+    upvotes: '1.1K UPVOTES',
+    imageUrl:
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=2000&q=85',
+    imageAlt: 'Race car on track',
+  },
+  {
+    slug: 'suspension-geometry-indian-roads-guide',
+    category: 'ENGINEERING',
+    categoryClass: 'engineering',
+    categoryPath: 'engineering',
+    title:
+      'What Suspension Geometry Tells You About a Vehicle Before You Drive It: A Complete Guide for Indian Roads',
+    author: 'PREETAM · AUTOXEC',
+    readTime: '12 MIN READ',
+    upvotes: '2.3K UPVOTES',
+    imageUrl:
+      'https://images.unsplash.com/photo-1489824904134-891ab64532f1?auto=format&fit=crop&w=2000&q=85',
+    imageAlt: 'Car suspension and wheel detail',
+  },
+]
+
+export const HERO_MAIN = HERO_SLIDES[0]!
 
 export const HERO_SIDE = [
   {
@@ -48,6 +126,8 @@ export const HERO_SIDE = [
     title:
       "Why India's EV Range Numbers Are Always 30% Lower Than Claimed — The Thermal Physics Explanation",
     meta: '6 MIN · 1.8K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80',
   },
   {
     slug: 'formula-bharat-2025-iit-bombay-monocoque',
@@ -55,6 +135,8 @@ export const HERO_SIDE = [
     catClass: 'motorsport' as const,
     title: "Formula Bharat 2025: IIT Bombay's Carbon Fibre Monocoque — A Technical Breakdown",
     meta: '5 MIN · 1.1K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1458322493963-27c0e9f6b108?auto=format&fit=crop&w=800&q=80',
   },
   {
     slug: 'bajaj-triumph-speed-400-engine-cost-engineering',
@@ -62,6 +144,8 @@ export const HERO_SIDE = [
     catClass: 'engineering' as const,
     title: 'How Bajaj-Triumph Built the Speed 400 Engine for ₹2.4L — The Cost-Engineering Tradeoffs',
     meta: '7 MIN · 2.1K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80',
   },
 ] as const
 
@@ -72,6 +156,8 @@ export const STORIES = [
     title: '800V vs 400V: Which Charges Faster in India?',
     meta: 'EV · 3 MIN',
     gradient: 'linear-gradient(135deg,#1a0a30,#3d1a7a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'turbo-lag-explained-90-seconds',
@@ -79,6 +165,8 @@ export const STORIES = [
     title: 'Turbo Lag Explained in 90 Seconds',
     meta: 'ENG · 2 MIN',
     gradient: 'linear-gradient(135deg,#1a0a0a,#5a1010)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'thar-roxx-suspension-geometry',
@@ -86,6 +174,8 @@ export const STORIES = [
     title: 'Thar Roxx Suspension Geometry — What Changed',
     meta: 'LAUNCH · 4 MIN',
     gradient: 'linear-gradient(135deg,#0a1a0a,#0a4020)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'ktm-lc8c-four-valves-per-cylinder',
@@ -93,6 +183,8 @@ export const STORIES = [
     title: 'KTM LC8c Engine — Why 4 Valves Per Cylinder',
     meta: '2W · 3 MIN',
     gradient: 'linear-gradient(135deg,#0a0a1a,#1a1a5a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'ev-sales-march-2025-by-state',
@@ -100,6 +192,8 @@ export const STORIES = [
     title: 'EV Sales Data March 2025 — State by State',
     meta: 'INDUSTRY · 3 MIN',
     gradient: 'linear-gradient(135deg,#1a0a1a,#4a1a4a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1504222490345-c075b600dfa4?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'adas-indian-roads-engineering',
@@ -107,6 +201,8 @@ export const STORIES = [
     title: 'How ADAS Fails on Indian Roads — Engineering View',
     meta: 'ENG · 5 MIN',
     gradient: 'linear-gradient(135deg,#1a1a0a,#4a3a0a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'f1-miami-2025-downforce-numbers',
@@ -114,6 +210,8 @@ export const STORIES = [
     title: 'F1 Miami 2025: What the Downforce Numbers Tell Us',
     meta: 'F1 · 4 MIN',
     gradient: 'linear-gradient(135deg,#0a1a1a,#0a3a3a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&h=800&q=80',
   },
   {
     slug: 'cng-vs-petrol-physics',
@@ -121,6 +219,8 @@ export const STORIES = [
     title: 'Why CNG Is Actually Better Physics Than Petrol',
     meta: 'ENG · 3 MIN',
     gradient: 'linear-gradient(135deg,#1a0f0a,#4a2a0a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&h=800&q=80',
   },
 ] as const
 
@@ -154,6 +254,8 @@ export type Article = {
   deepDive?: boolean
   published?: string
   updated?: string
+  /** Prefer over gradient+label thumbnails when set. */
+  imageUrl?: string
 }
 
 export const ARTICLES: Article[] = [
@@ -178,6 +280,8 @@ export const ARTICLES: Article[] = [
     meta: 'PREETAM · 2H AGO',
     thumbLabel: 'EV',
     thumbGradient: 'linear-gradient(135deg,#0a1f0a,#1a4020)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=800&q=80',
     published: '28 Mar 2026',
     updated: '28 Mar 2026',
   },
@@ -202,6 +306,8 @@ export const ARTICLES: Article[] = [
     meta: 'PREETAM · 4H AGO',
     thumbLabel: 'KIA',
     thumbGradient: 'linear-gradient(135deg,#1a0a0a,#3a1010)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1494976388531-d085849cfcbf?auto=format&fit=crop&w=800&q=80',
     published: '28 Mar 2026',
     updated: '28 Mar 2026',
   },
@@ -233,6 +339,8 @@ export const ARTICLES: Article[] = [
     meta: 'PREETAM · 1D AGO',
     thumbLabel: 'ENG',
     thumbGradient: 'linear-gradient(135deg,#0a0a1f,#1a1a40)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1489824904134-891ab64532f1?auto=format&fit=crop&w=800&q=80',
     published: '27 Mar 2026',
     updated: '28 Mar 2026',
   },
@@ -257,6 +365,8 @@ export const ARTICLES: Article[] = [
     meta: 'PREETAM · 1D AGO',
     thumbLabel: 'GP',
     thumbGradient: 'linear-gradient(135deg,#1a1a0a,#3a2800)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
     published: '27 Mar 2026',
     updated: '28 Mar 2026',
   },
@@ -281,6 +391,8 @@ export const ARTICLES: Article[] = [
     meta: 'PREETAM · 2D AGO',
     thumbLabel: '2W',
     thumbGradient: 'linear-gradient(135deg,#0a0f1a,#0a1a30)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80',
     published: '26 Mar 2026',
     updated: '28 Mar 2026',
   },
@@ -305,6 +417,8 @@ export const ARTICLES: Article[] = [
     meta: 'PREETAM · 3D AGO',
     thumbLabel: 'IND',
     thumbGradient: 'linear-gradient(135deg,#0a1a1a,#0a2a2a)',
+    imageUrl:
+      'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=800&q=80',
     published: '25 Mar 2026',
     updated: '28 Mar 2026',
   },
@@ -355,16 +469,22 @@ export const EV_MINI = [
     slug: 'lfp-vs-nmc-india-climate-2025',
     title: 'LFP vs NMC in 2025: Which Chemistry Wins for Indian Climate Conditions?',
     meta: '8 MIN · 1.4K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1619771917827-3c6696e2616a?auto=format&fit=crop&w=900&q=80',
   },
   {
     slug: 'maruti-evitara-bms-delhi-heat',
     title: "How Maruti's eVitara BMS Handles Delhi Summer Heat: A Technical Comparison",
     meta: '6 MIN · 890 ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=900&q=80',
   },
   {
     slug: 'v2g-india-infrastructure-gap-2028',
     title: 'Vehicle-to-Grid in India: Why It Will Not Work Until 2028 — The Infrastructure Gap Explained',
     meta: '9 MIN · 1.1K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=900&q=80',
   },
 ] as const
 
@@ -373,16 +493,22 @@ export const ENG_MINI = [
     slug: 'indian-roads-euro-suspension-specs',
     title: 'Why Indian Road Surfaces Destroy European Susp Specs — And What Should Replace Them',
     meta: '11 MIN · 2.1K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1489824904134-891ab64532f1?auto=format&fit=crop&w=900&q=80',
   },
   {
     slug: 'ci-vs-si-diesel-2025',
     title: 'Compression Ignition vs Spark Ignition in 2025: The Case for Diesel Nobody Is Making',
     meta: '8 MIN · 1.6K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1449426468159-96ae08ce730d?auto=format&fit=crop&w=900&q=80',
   },
   {
     slug: 'monocoque-engineered-to-fail-safety',
     title: 'How a Monocoque Chassis Is Engineered to Fail — And Why That Makes You Safer',
     meta: '7 MIN · 1.9K ↑',
+    imageUrl:
+      'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?auto=format&fit=crop&w=900&q=80',
   },
 ] as const
 
@@ -486,6 +612,7 @@ const STUB_POOL: Article[] = [
       'The featured lead story on AutoXec — 800V architecture, real charging curves, and what it changes for Indian owners day to day.',
     thumbLabel: 'BE',
     thumbGradient: 'linear-gradient(135deg,#1A0F30 0%,#2D1060 50%,#0D0820 100%)',
+    imageUrl: HERO_MAIN.imageUrl,
     upvotes: 2400,
     readTime: '8 MIN READ',
     meta: 'PREETAM · AUTOXEC',
@@ -498,6 +625,7 @@ const STUB_POOL: Article[] = [
       badgeClass: h.catClass,
       title: h.title,
       excerpt: 'From the homepage hero rail — open for full technical analysis.',
+      imageUrl: h.imageUrl,
     }),
   ),
   ...STORIES.map((s) =>
@@ -510,6 +638,7 @@ const STUB_POOL: Article[] = [
       excerpt: `${s.title} — a bite-size explainer from the AutoXec Quick Reads strip.`,
       thumbLabel: 'QR',
       thumbGradient: s.gradient,
+      imageUrl: s.imageUrl,
       readTime: '3 MIN READ',
     }),
   ),
@@ -521,6 +650,7 @@ const STUB_POOL: Article[] = [
       badgeClass: 'ev',
       title: m.title,
       excerpt: 'From the EV spotlight row — battery systems, thermal behaviour, and charging in India.',
+      imageUrl: m.imageUrl,
     }),
   ),
   ...ENG_MINI.map((m) =>
@@ -532,6 +662,7 @@ const STUB_POOL: Article[] = [
       title: m.title,
       excerpt: 'From the engineering spotlight row — mechanisms, trade-offs, and verified sources.',
       readTime: '8 MIN READ',
+      imageUrl: m.imageUrl,
     }),
   ),
 ]

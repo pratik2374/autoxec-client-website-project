@@ -1,7 +1,8 @@
 import type { MouseEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
+import { HeroCarousel } from '../components/HeroCarousel'
 import { SidebarWidgets } from '../components/SidebarWidgets'
 import type { ArticleCategory } from '../data'
 import {
@@ -9,8 +10,8 @@ import {
   ENG_MINI,
   EV_MINI,
   FILTER_COUNTS,
-  HERO_MAIN,
   HERO_SIDE,
+  HERO_SLIDES,
   STORIES,
 } from '../data'
 import { useToast } from '../context/ToastContext'
@@ -18,7 +19,6 @@ import { articleUrl, categoryToQueryValue, queryValueToCategory } from '../lib/s
 
 export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const navigate = useNavigate()
   const showToast = useToast()
   const [upvoted, setUpvoted] = useState<Record<string, boolean>>({})
 
@@ -57,36 +57,7 @@ export function HomePage() {
   return (
     <>
       <div className="hero">
-        <div
-          className="hero-main"
-          role="link"
-          tabIndex={0}
-          onClick={() => navigate(articleUrl(HERO_MAIN.slug))}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') navigate(articleUrl(HERO_MAIN.slug))
-          }}
-        >
-          <div className="hero-img-placeholder condensed">{HERO_MAIN.placeholder}</div>
-          <div className="hero-overlay" aria-hidden />
-          <div className="hero-content">
-            <Link
-              to="/category/launches"
-              className="hero-cat-link"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span className={`cat-badge ${HERO_MAIN.categoryClass}`}>{HERO_MAIN.category}</span>
-            </Link>
-            <h1 className="hero-title">{HERO_MAIN.title}</h1>
-            <div className="hero-meta">
-              <span className="live-dot" aria-hidden />
-              <span>{HERO_MAIN.author}</span>
-              <span aria-hidden>·</span>
-              <span className="mono">{HERO_MAIN.readTime}</span>
-              <span aria-hidden>·</span>
-              <span className="mono">{HERO_MAIN.upvotes}</span>
-            </div>
-          </div>
-        </div>
+        <HeroCarousel slides={HERO_SLIDES} />
         <div className="hero-side">
           {HERO_SIDE.map((item) => (
             <Link
@@ -95,11 +66,14 @@ export function HomePage() {
               className="hero-side-card"
               style={{ textDecoration: 'none' }}
             >
-              <span className={`hero-side-cat cat-badge ${item.catClass}`} style={{ fontSize: 9 }}>
-                {item.cat}
-              </span>
-              <div className="hero-side-title">{item.title}</div>
-              <div className="hero-side-meta mono">{item.meta}</div>
+              <div className="hero-side-copy">
+                <span className={`hero-side-cat cat-badge ${item.catClass}`} style={{ fontSize: 9 }}>
+                  {item.cat}
+                </span>
+                <div className="hero-side-title">{item.title}</div>
+                <div className="hero-side-meta mono">{item.meta}</div>
+              </div>
+              <img className="hero-side-thumb" src={item.imageUrl} alt="" loading="lazy" decoding="async" />
             </Link>
           ))}
         </div>
@@ -116,11 +90,9 @@ export function HomePage() {
           {STORIES.map((s) => (
             <Link key={s.slug} to={articleUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
               <div className="story-thumb">
-                <div className="story-bg" style={{ background: s.gradient }}>
+                <div className="story-bg story-bg--photo">
+                  <img src={s.imageUrl} alt="" className="story-photo" loading="lazy" decoding="async" />
                   <div className="story-gradient" />
-                  <div className="story-icon" aria-hidden>
-                    {s.icon}
-                  </div>
                   <div className="story-text">{s.title}</div>
                 </div>
               </div>
@@ -203,11 +175,14 @@ export function HomePage() {
             <Link
               key={c.slug}
               to={articleUrl(c.slug)}
-              className="cat-mini-card"
+              className="cat-mini-card cat-mini-card--media"
               style={{ borderTop: '2px solid #1A7A3C', textDecoration: 'none' }}
             >
-              <div className="cat-mini-title">{c.title}</div>
-              <div className="cat-mini-meta mono">{c.meta}</div>
+              <img className="cat-mini-img" src={c.imageUrl} alt="" loading="lazy" decoding="async" />
+              <div className="cat-mini-body">
+                <div className="cat-mini-title">{c.title}</div>
+                <div className="cat-mini-meta mono">{c.meta}</div>
+              </div>
             </Link>
           ))}
         </div>
@@ -233,11 +208,14 @@ export function HomePage() {
             <Link
               key={c.slug}
               to={articleUrl(c.slug)}
-              className="cat-mini-card"
+              className="cat-mini-card cat-mini-card--media"
               style={{ borderTop: '2px solid #6B3FA0', textDecoration: 'none' }}
             >
-              <div className="cat-mini-title">{c.title}</div>
-              <div className="cat-mini-meta mono">{c.meta}</div>
+              <img className="cat-mini-img" src={c.imageUrl} alt="" loading="lazy" decoding="async" />
+              <div className="cat-mini-body">
+                <div className="cat-mini-title">{c.title}</div>
+                <div className="cat-mini-meta mono">{c.meta}</div>
+              </div>
             </Link>
           ))}
         </div>

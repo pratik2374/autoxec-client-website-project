@@ -96,19 +96,30 @@ export function ArticlePage() {
           <span className="read-time mono">{article.readTime}</span>
         </div>
 
-        <div
-          className="thumb-placeholder"
-          style={{
-            minHeight: 220,
-            width: '100%',
-            background: article.thumbGradient,
-            marginBottom: 28,
-            borderRadius: 6,
-            fontSize: 48,
-          }}
-        >
-          {article.thumbLabel}
-        </div>
+        {article.imageUrl ? (
+          <img
+            src={article.imageUrl}
+            alt=""
+            className="article-hero-img"
+            loading="eager"
+            decoding="async"
+            style={{ marginBottom: 28 }}
+          />
+        ) : (
+          <div
+            className="thumb-placeholder"
+            style={{
+              minHeight: 220,
+              width: '100%',
+              background: article.thumbGradient,
+              marginBottom: 28,
+              borderRadius: 6,
+              fontSize: 48,
+            }}
+          >
+            {article.thumbLabel}
+          </div>
+        )}
 
         <div className="prose">
           {article.bodyParagraphs?.map((para, i) => (

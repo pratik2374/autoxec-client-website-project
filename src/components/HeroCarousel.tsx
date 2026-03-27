@@ -26,7 +26,8 @@ export function HeroCarousel({ slides }: Props) {
   )
 
   useEffect(() => {
-    if (paused || len <= 1) return
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (paused || len <= 1 || reduceMotion) return
     tickRef.current = setInterval(() => {
       setActive((a) => (a + 1) % len)
     }, ROTATE_MS)
@@ -64,18 +65,11 @@ export function HeroCarousel({ slides }: Props) {
       </div>
       <div className="hero-overlay" aria-hidden />
 
-      <Link
-        className="hero-full-bleed-link"
-        to={articleUrl(slide.slug)}
-        tabIndex={-1}
-        aria-hidden="true"
-      />
-
       <div className="hero-content hero-content--floating">
         <Link to={`/category/${slide.categoryPath}`} className="hero-cat-link">
           <span className={`cat-badge ${slide.categoryClass}`}>{slide.category}</span>
         </Link>
-        <Link to={articleUrl(slide.slug)} className="hero-story-block">
+        <Link to={articleUrl(slide.slug)} className="hero-story-block hero-story-block--stretch">
           <h1 className="hero-title">{slide.title}</h1>
           <div className="hero-meta">
             <span className="live-dot" aria-hidden />
