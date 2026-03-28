@@ -1,11 +1,12 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { TRENDING } from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 import { articleUrl } from '../lib/site'
 
 export function NotFoundPage() {
   const navigate = useNavigate()
   const [q, setQ] = useState('')
+  const { trending } = useSiteData()
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -46,7 +47,7 @@ export function NotFoundPage() {
         Trending now
       </h2>
       <div className="cat-grid" style={{ marginTop: 16 }}>
-        {TRENDING.slice(0, 3).map((t) => (
+        {trending.slice(0, 3).map((t) => (
           <Link key={t.num} to={articleUrl(t.slug)} className="cat-mini-card" style={{ textDecoration: 'none' }}>
             <div className="cat-mini-title">{t.title}</div>
             <div className="cat-mini-meta mono">{t.meta}</div>

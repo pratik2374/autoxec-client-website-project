@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { STORIES } from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 import { articleUrl } from '../lib/site'
 
 export function QuickReadsPage() {
+  const { stories } = useSiteData()
   return (
     <div className="page-shell-wide">
       <p className="section-label">// QUICK READS</p>
@@ -11,7 +12,7 @@ export function QuickReadsPage() {
         Two-to-five minute pieces built to share on WhatsApp — same strip as the homepage, on one page.
       </p>
       <div className="stories-row" style={{ flexWrap: 'wrap', paddingBottom: 40 }}>
-        {STORIES.map((s) => (
+        {stories.map((s) => (
           <Link key={s.slug} to={articleUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
             <div className="story-thumb">
               <div className="story-bg story-bg--photo">

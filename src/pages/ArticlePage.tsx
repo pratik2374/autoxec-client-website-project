@@ -2,10 +2,9 @@ import type { MouseEvent } from 'react'
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { SidebarWidgets } from '../components/SidebarWidgets'
-import { findArticleOrStub } from '../data'
 import { categoryToPathSlug } from '../lib/site'
 import { articleUrl } from '../lib/site'
-import { ARTICLES } from '../data'
+import { useArticleBySlug, useSiteData } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
 import { NotFoundPage } from './NotFoundPage'
 
@@ -13,8 +12,9 @@ export function ArticlePage() {
   const { slug } = useParams()
   const showToast = useToast()
   const [upvoted, setUpvoted] = useState(false)
+  const { articles } = useSiteData()
 
-  const article = slug ? findArticleOrStub(slug) : undefined
+  const article = useArticleBySlug(slug)
 
   const share = useCallback(
     (e?: MouseEvent) => {
@@ -30,7 +30,7 @@ export function ArticlePage() {
     return <NotFoundPage />
   }
 
-  const related = ARTICLES.filter((a) => a.cat === article.cat && a.slug !== article.slug).slice(0, 3)
+  const related = articles.filter((a) => a.cat === article.cat && a.slug !== article.slug).slice(0, 3)
   const categorySlug = categoryToPathSlug(article.cat)
   const categoryLabel = article.badge
 

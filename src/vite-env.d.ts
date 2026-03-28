@@ -7,6 +7,10 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_STORAGE_BUCKET: string
   readonly VITE_FIREBASE_MESSAGING_SENDER_ID: string
   readonly VITE_FIREBASE_APP_ID: string
+  /** Sanity CMS (public read). Leave unset to use embedded `src/data.ts` only. */
+  readonly VITE_SANITY_PROJECT_ID?: string
+  readonly VITE_SANITY_DATASET?: string
+  readonly VITE_SANITY_API_VERSION?: string
 }
 
 interface ImportMeta {

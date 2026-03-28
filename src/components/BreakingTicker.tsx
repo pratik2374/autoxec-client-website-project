@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { TICKER_ITEMS } from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 
 export function BreakingTicker() {
-  const tickerDup = useMemo(() => [...TICKER_ITEMS, ...TICKER_ITEMS], [])
+  const { tickerItems } = useSiteData()
+  const tickerDup = useMemo(() => [...tickerItems, ...tickerItems], [tickerItems])
 
   return (
     <div className="ticker" aria-hidden="true">

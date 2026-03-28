@@ -224,6 +224,12 @@ export const STORIES = [
   },
 ] as const
 
+export type StoryCard = (typeof STORIES)[number]
+export type HeroSideItem = (typeof HERO_SIDE)[number]
+export type TrendingRow = (typeof TRENDING)[number]
+export type EvMiniCard = (typeof EV_MINI)[number]
+export type EngMiniCard = (typeof ENG_MINI)[number]
+
 export const FILTER_COUNTS: Record<ArticleCategory, number> = {
   all: 24,
   ev: 8,
@@ -601,89 +607,125 @@ function heroSideCat(h: (typeof HERO_SIDE)[number]): Article['cat'] {
   return 'engineering'
 }
 
-const STUB_POOL: Article[] = [
-  buildStubArticle({
-    slug: HERO_MAIN.slug,
-    cat: 'launch',
-    badge: 'LAUNCH ANALYSIS',
-    badgeClass: 'launch',
-    title: HERO_MAIN.title,
-    excerpt:
-      'The featured lead story on AutoXec — 800V architecture, real charging curves, and what it changes for Indian owners day to day.',
-    thumbLabel: 'BE',
-    thumbGradient: 'linear-gradient(135deg,#1A0F30 0%,#2D1060 50%,#0D0820 100%)',
-    imageUrl: HERO_MAIN.imageUrl,
-    upvotes: 2400,
-    readTime: '8 MIN READ',
-    meta: 'PREETAM · AUTOXEC',
-  }),
-  ...HERO_SIDE.map((h) =>
+export type StubPoolInput = {
+  heroMain: HeroSlide
+  heroSide: readonly HeroSideItem[]
+  stories: readonly StoryCard[]
+  evMini: readonly EvMiniCard[]
+  engMini: readonly EngMiniCard[]
+}
+
+/** Builds stub articles for slugs that appear on the home page but may not have a full `Article` document. */
+export function buildStubPool(input: StubPoolInput): Article[] {
+  const { heroMain, heroSide, stories, evMini, engMini } = input
+  return [
     buildStubArticle({
-      slug: h.slug,
-      cat: heroSideCat(h),
-      badge: h.cat,
-      badgeClass: h.catClass,
-      title: h.title,
-      excerpt: 'From the homepage hero rail — open for full technical analysis.',
-      imageUrl: h.imageUrl,
-    }),
-  ),
-  ...STORIES.map((s) =>
-    buildStubArticle({
-      slug: s.slug,
-      cat: inferStoryCat(s.meta),
-      badge: 'QUICK READ',
-      badgeClass: inferStoryBadge(s.meta),
-      title: s.title,
-      excerpt: `${s.title} — a bite-size explainer from the AutoXec Quick Reads strip.`,
-      thumbLabel: 'QR',
-      thumbGradient: s.gradient,
-      imageUrl: s.imageUrl,
-      readTime: '3 MIN READ',
-    }),
-  ),
-  ...EV_MINI.map((m) =>
-    buildStubArticle({
-      slug: m.slug,
-      cat: 'ev',
-      badge: 'EV INTELLIGENCE',
-      badgeClass: 'ev',
-      title: m.title,
-      excerpt: 'From the EV spotlight row — battery systems, thermal behaviour, and charging in India.',
-      imageUrl: m.imageUrl,
-    }),
-  ),
-  ...ENG_MINI.map((m) =>
-    buildStubArticle({
-      slug: m.slug,
-      cat: 'engineering',
-      badge: 'ENGINEERING',
-      badgeClass: 'engineering',
-      title: m.title,
-      excerpt: 'From the engineering spotlight row — mechanisms, trade-offs, and verified sources.',
+      slug: heroMain.slug,
+      cat: 'launch',
+      badge: 'LAUNCH ANALYSIS',
+      badgeClass: 'launch',
+      title: heroMain.title,
+      excerpt:
+        'The featured lead story on AutoXec — 800V architecture, real charging curves, and what it changes for Indian owners day to day.',
+      thumbLabel: 'BE',
+      thumbGradient: 'linear-gradient(135deg,#1A0F30 0%,#2D1060 50%,#0D0820 100%)',
+      imageUrl: heroMain.imageUrl,
+      upvotes: 2400,
       readTime: '8 MIN READ',
-      imageUrl: m.imageUrl,
+      meta: 'PREETAM · AUTOXEC',
     }),
-  ),
-]
+    ...heroSide.map((h) =>
+      buildStubArticle({
+        slug: h.slug,
+        cat: heroSideCat(h),
+        badge: h.cat,
+        badgeClass: h.catClass,
+        title: h.title,
+        excerpt: 'From the homepage hero rail — open for full technical analysis.',
+        imageUrl: h.imageUrl,
+      }),
+    ),
+    ...stories.map((s) =>
+      buildStubArticle({
+        slug: s.slug,
+        cat: inferStoryCat(s.meta),
+        badge: 'QUICK READ',
+        badgeClass: inferStoryBadge(s.meta),
+        title: s.title,
+        excerpt: `${s.title} — a bite-size explainer from the AutoXec Quick Reads strip.`,
+        thumbLabel: 'QR',
+        thumbGradient: s.gradient,
+        imageUrl: s.imageUrl,
+        readTime: '3 MIN READ',
+      }),
+    ),
+    ...evMini.map((m) =>
+      buildStubArticle({
+        slug: m.slug,
+        cat: 'ev',
+        badge: 'EV INTELLIGENCE',
+        badgeClass: 'ev',
+        title: m.title,
+        excerpt: 'From the EV spotlight row — battery systems, thermal behaviour, and charging in India.',
+        imageUrl: m.imageUrl,
+      }),
+    ),
+    ...engMini.map((m) =>
+      buildStubArticle({
+        slug: m.slug,
+        cat: 'engineering',
+        badge: 'ENGINEERING',
+        badgeClass: 'engineering',
+        title: m.title,
+        excerpt: 'From the engineering spotlight row — mechanisms, trade-offs, and verified sources.',
+        readTime: '8 MIN READ',
+        imageUrl: m.imageUrl,
+      }),
+    ),
+  ]
+}
+
+const STUB_POOL: Article[] = buildStubPool({
+  heroMain: HERO_MAIN,
+  heroSide: HERO_SIDE,
+  stories: STORIES,
+  evMini: EV_MINI,
+  engMini: ENG_MINI,
+})
+
+export function findArticleOrStubWith(
+  slug: string,
+  articles: Article[],
+  stubPool: Article[],
+): Article | undefined {
+  const main = articles.find((a) => a.slug === slug)
+  if (main) return main
+  return stubPool.find((a) => a.slug === slug)
+}
 
 export function findArticleOrStub(slug: string): Article | undefined {
-  const main = ARTICLES.find((a) => a.slug === slug)
-  if (main) return main
-  return STUB_POOL.find((a) => a.slug === slug)
+  return findArticleOrStubWith(slug, ARTICLES, STUB_POOL)
 }
 
 export function getArticleBySlug(slug: string): Article | undefined {
   return findArticleOrStub(slug)
 }
 
-export function allArticlesMerged(): Article[] {
+export function allArticlesMergedFrom(articles: Article[], stubPool: Article[]): Article[] {
   const bySlug = new Map<string, Article>()
-  for (const a of STUB_POOL) bySlug.set(a.slug, a)
-  for (const a of ARTICLES) bySlug.set(a.slug, a)
+  for (const a of stubPool) bySlug.set(a.slug, a)
+  for (const a of articles) bySlug.set(a.slug, a)
   return [...bySlug.values()]
 }
 
+export function allArticlesMerged(): Article[] {
+  return allArticlesMergedFrom(ARTICLES, STUB_POOL)
+}
+
+export function articlesInCategoryFrom(cat: NavCategory, articles: Article[], stubPool: Article[]): Article[] {
+  return allArticlesMergedFrom(articles, stubPool).filter((a) => a.cat === cat)
+}
+
 export function articlesInCategory(cat: NavCategory): Article[] {
-  return allArticlesMerged().filter((a) => a.cat === cat)
+  return articlesInCategoryFrom(cat, ARTICLES, STUB_POOL)
 }

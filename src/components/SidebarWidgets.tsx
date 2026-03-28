@@ -1,7 +1,7 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { TRENDING, TOPICS } from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 import { articleUrl } from '../lib/site'
 import { useToast } from '../context/ToastContext'
 import { isFirebaseConfigured } from '../firebase/config'
@@ -10,6 +10,7 @@ import { saveNewsletterSignup } from '../firebase/newsletter'
 export function SidebarWidgets() {
   const navigate = useNavigate()
   const showToast = useToast()
+  const { trending, topics } = useSiteData()
   const [briefEmail, setBriefEmail] = useState('')
   const [briefAgree, setBriefAgree] = useState(false)
   const [briefSubmitting, setBriefSubmitting] = useState(false)
@@ -53,7 +54,7 @@ export function SidebarWidgets() {
     <aside className="sidebar">
       <div className="sidebar-section">
         <div className="sidebar-title">Trending Now</div>
-        {TRENDING.map((t) => (
+        {trending.map((t) => (
           <Link key={t.num} to={articleUrl(t.slug)} className="trending-item" style={{ textDecoration: 'none' }}>
             <div className="trending-num">{t.num}</div>
             <div>
@@ -67,7 +68,7 @@ export function SidebarWidgets() {
       <div className="sidebar-section">
         <div className="sidebar-title">Explore Topics</div>
         <div className="topic-chips">
-          {TOPICS.map((topic) => (
+          {topics.map((topic) => (
             <button
               key={topic}
               type="button"

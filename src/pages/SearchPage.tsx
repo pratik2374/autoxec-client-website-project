@@ -1,23 +1,24 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { allArticlesMerged } from '../data'
+import { useAllArticlesMerged } from '../context/SiteDataContext'
 import { articleUrl } from '../lib/site'
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams()
   const q = (params.get('q') ?? '').trim()
   const [draft, setDraft] = useState(q)
+  const merged = useAllArticlesMerged()
 
   const results = useMemo(() => {
     if (!q) return []
     const low = q.toLowerCase()
-    return allArticlesMerged().filter(
+    return merged.filter(
       (a) =>
         a.title.toLowerCase().includes(low) ||
         a.excerpt.toLowerCase().includes(low) ||
         a.badge.toLowerCase().includes(low),
     )
-  }, [q])
+  }, [q, merged])
 
   const submit = (e: FormEvent) => {
     e.preventDefault()

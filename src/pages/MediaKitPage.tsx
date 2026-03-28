@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { ARTICLES } from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 import { articleUrl } from '../lib/site'
 
 export function MediaKitPage() {
-  const samples = ARTICLES.slice(0, 4)
+  const { articles } = useSiteData()
+  const samples = articles.slice(0, 4)
 
   return (
     <div className="page-shell-wide">

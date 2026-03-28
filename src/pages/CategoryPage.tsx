@@ -2,7 +2,8 @@ import type { MouseEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
-import { CATEGORY_META, articlesInCategory, type NavCategory } from '../data'
+import { CATEGORY_META, type NavCategory } from '../data'
+import { useArticlesInCategoryOrEmpty } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
 import { categoryToPathSlug, pathSlugToCategory } from '../lib/site'
 import { NotFoundPage } from './NotFoundPage'
@@ -16,13 +17,15 @@ export function CategoryPage() {
   const cat = slug ? pathSlugToCategory(slug) : null
   const sort = searchParams.get('sort') ?? 'latest'
 
+  const baseList = useArticlesInCategoryOrEmpty(cat)
+
   const items = useMemo(() => {
     if (!cat) return []
-    let list = articlesInCategory(cat)
+    let list = baseList
     if (sort === 'upvotes') list = [...list].sort((a, b) => b.upvotes - a.upvotes)
     if (sort === 'oldest') list = [...list].reverse()
     return list
-  }, [cat, sort])
+  }, [cat, sort, baseList])
 
   const toggleUpvote = (id: string, e: MouseEvent) => {
     e.stopPropagation()

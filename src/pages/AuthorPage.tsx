@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import { ARTICLES } from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 import { articleUrl } from '../lib/site'
 
 export function AuthorPage() {
-  const pieces = ARTICLES.filter(() => true)
+  const { articles } = useSiteData()
+  const pieces = articles
 
   return (
     <div className="page-shell-wide">

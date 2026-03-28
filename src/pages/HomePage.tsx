@@ -5,15 +5,7 @@ import { ArticleCard } from '../components/ArticleCard'
 import { HeroCarousel } from '../components/HeroCarousel'
 import { SidebarWidgets } from '../components/SidebarWidgets'
 import type { ArticleCategory } from '../data'
-import {
-  ARTICLES,
-  ENG_MINI,
-  EV_MINI,
-  FILTER_COUNTS,
-  HERO_SIDE,
-  HERO_SLIDES,
-  STORIES,
-} from '../data'
+import { useSiteData } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
 import { articleUrl, categoryToQueryValue, queryValueToCategory } from '../lib/site'
 
@@ -21,6 +13,15 @@ export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const showToast = useToast()
   const [upvoted, setUpvoted] = useState<Record<string, boolean>>({})
+  const {
+    articles,
+    heroSlides,
+    heroSide,
+    stories,
+    filterCounts,
+    evMini,
+    engMini,
+  } = useSiteData()
 
   const filter: ArticleCategory = queryValueToCategory(searchParams.get('category'))
 
@@ -31,8 +32,8 @@ export function HomePage() {
   }
 
   const filteredArticles = useMemo(
-    () => (filter === 'all' ? ARTICLES : ARTICLES.filter((a) => a.cat === filter)),
-    [filter],
+    () => (filter === 'all' ? articles : articles.filter((a) => a.cat === filter)),
+    [filter, articles],
   )
 
   const toggleUpvote = (id: string, e: MouseEvent) => {
@@ -57,9 +58,9 @@ export function HomePage() {
   return (
     <>
       <div className="hero">
-        <HeroCarousel slides={HERO_SLIDES} />
+        <HeroCarousel slides={heroSlides} />
         <div className="hero-side">
-          {HERO_SIDE.map((item) => (
+          {heroSide.map((item) => (
             <Link
               key={item.slug}
               to={articleUrl(item.slug)}
@@ -87,7 +88,7 @@ export function HomePage() {
           </Link>
         </div>
         <div className="stories-row">
-          {STORIES.map((s) => (
+          {stories.map((s) => (
             <Link key={s.slug} to={articleUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
               <div className="story-thumb">
                 <div className="story-bg story-bg--photo">
@@ -124,7 +125,7 @@ export function HomePage() {
                 className={`filter-chip${filter === id ? ' active' : ''}`}
                 onClick={() => setFilter(id)}
               >
-                {label} <span className="filter-count">{FILTER_COUNTS[id]}</span>
+                {label} <span className="filter-count">{filterCounts[id]}</span>
               </button>
             ))}
           </div>
@@ -171,7 +172,7 @@ export function HomePage() {
           </Link>
         </div>
         <div className="cat-grid">
-          {EV_MINI.map((c) => (
+          {evMini.map((c) => (
             <Link
               key={c.slug}
               to={articleUrl(c.slug)}
@@ -204,7 +205,7 @@ export function HomePage() {
           </Link>
         </div>
         <div className="cat-grid">
-          {ENG_MINI.map((c) => (
+          {engMini.map((c) => (
             <Link
               key={c.slug}
               to={articleUrl(c.slug)}
