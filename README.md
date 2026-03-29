@@ -1,6 +1,6 @@
 # AutoXec website
 
-Vite + React + TypeScript editorial site with optional **Sanity CMS** for articles and homepage configuration. If Sanity env vars are missing, the app uses embedded data in **`src/data.ts`** (same behaviour as before).
+Vite + React + TypeScript editorial site with optional **Sanity CMS** for articles and homepage configuration. If Sanity env vars are missing, the app uses embedded data in **`src/data.ts`** (same behaviour as before)
 
 ## Run locally (frontend)
 
