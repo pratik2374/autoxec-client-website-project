@@ -1604,3 +1604,26 @@ a.trending-item {
   white-space: nowrap;
   border: 0;
 }
+
+
+/* Custom Scrollbar to match Dark Mode */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red);
+}
+
+
+/* Custom Automotive Cursors */
+* {
+  cursor: url('/cursor-default.svg') 2 2, auto !important;
+}

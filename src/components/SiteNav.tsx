@@ -1,23 +1,30 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { NAV_CATEGORIES } from '../data'
 import { categoryToPathSlug } from '../lib/site'
 import { useToast } from '../context/ToastContext'
+import { useSiteData } from '../context/SiteDataContext'
 
 export function SiteNav() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const showToast = useToast()
+  const { categories } = useSiteData()
   const [q, setQ] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const navItems = [
+    { slug: 'all', title: 'All' },
+    ...categories.map(c => ({ slug: c.slug, title: c.title }))
+  ]
+
 
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
 
-  const isNavActive = (id: (typeof NAV_CATEGORIES)[number]['id']) => {
-    if (id === 'all') return pathname === '/'
-    return pathname === `/category/${categoryToPathSlug(id)}`
+  const isNavActive = (slug: string) => {
+    if (slug === 'all') return pathname === '/'
+    return pathname === `/category/${categoryToPathSlug(slug)}`
   }
 
   const onSearch = (e: FormEvent) => {
@@ -41,22 +48,22 @@ export function SiteNav() {
         </Link>
 
         <div className="nav-links">
-          {NAV_CATEGORIES.map(({ id, label }) =>
-            id === 'all' ? (
+          {navItems.map(({ slug, title }) =>
+            slug === 'all' ? (
               <Link
-                key={id}
+                key={slug}
                 to="/"
-                className={`nav-link${isNavActive(id) ? ' active' : ''}`}
+                className={`nav-link${isNavActive(slug) ? ' active' : ''}`}
               >
-                {label}
+                {title}
               </Link>
             ) : (
               <Link
-                key={id}
-                to={`/category/${categoryToPathSlug(id)}`}
-                className={`nav-link${isNavActive(id) ? ' active' : ''}`}
+                key={slug}
+                to={`/category/${categoryToPathSlug(slug)}`}
+                className={`nav-link${isNavActive(slug) ? ' active' : ''}`}
               >
-                {label}
+                {title}
               </Link>
             ),
           )}
@@ -94,18 +101,18 @@ export function SiteNav() {
       </nav>
 
       <div className={`nav-overlay${menuOpen ? ' open' : ''}`} role="dialog" aria-label="Menu">
-        {NAV_CATEGORIES.map(({ id, label }) =>
-          id === 'all' ? (
-            <Link key={id} to="/" className={`nav-link${isNavActive(id) ? ' active' : ''}`}>
-              {label}
+        {navItems.map(({ slug, title }) =>
+          slug === 'all' ? (
+            <Link key={slug} to="/" className={`nav-link${isNavActive(slug) ? ' active' : ''}`}>
+              {title}
             </Link>
           ) : (
             <Link
-              key={id}
-              to={`/category/${categoryToPathSlug(id)}`}
-              className={`nav-link${isNavActive(id) ? ' active' : ''}`}
+              key={slug}
+              to={`/category/${categoryToPathSlug(slug)}`}
+              className={`nav-link${isNavActive(slug) ? ' active' : ''}`}
             >
-              {label}
+              {title}
             </Link>
           ),
         )}

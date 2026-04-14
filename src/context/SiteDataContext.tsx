@@ -4,27 +4,34 @@ import {
   allArticlesMergedFrom,
   articlesInCategoryFrom,
   type Article,
-  type ArticleCategory,
-  type NavCategory,
 } from '../data'
 import { getStaticSiteSnapshot, loadSiteContent, type SiteContent } from '../lib/sanity/fetchSite'
 
 const SiteDataContext = createContext<SiteContent | null>(null)
+const SiteLoadingContext = createContext<boolean>(true)
 
 export function SiteDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<SiteContent>(() => getStaticSiteSnapshot())
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
     void loadSiteContent().then((next) => {
-      if (!cancelled) setData(next)
+      if (!cancelled) {
+        setData(next)
+        setIsLoading(false)
+      }
     })
     return () => {
       cancelled = true
     }
   }, [])
 
-  return <SiteDataContext.Provider value={data}>{children}</SiteDataContext.Provider>
+  return (
+    <SiteLoadingContext.Provider value={isLoading}>
+      <SiteDataContext.Provider value={data}>{children}</SiteDataContext.Provider>
+    </SiteLoadingContext.Provider>
+  )
 }
 
 export function useSiteData(): SiteContent {
@@ -33,6 +40,10 @@ export function useSiteData(): SiteContent {
     throw new Error('useSiteData must be used within SiteDataProvider')
   }
   return v
+}
+
+export function useIsDataLoading(): boolean {
+  return useContext(SiteLoadingContext)
 }
 
 export function useArticleBySlug(slug: string | undefined): Article | undefined {
@@ -48,7 +59,7 @@ export function useAllArticlesMerged(): Article[] {
   return useMemo(() => allArticlesMergedFrom(articles, stubPool), [articles, stubPool])
 }
 
-export function useArticlesInCategory(cat: NavCategory): Article[] {
+export function useArticlesInCategory(cat: string): Article[] {
   const { articles, stubPool } = useSiteData()
   return useMemo(
     () => articlesInCategoryFrom(cat, articles, stubPool),
@@ -57,7 +68,7 @@ export function useArticlesInCategory(cat: NavCategory): Article[] {
 }
 
 /** Safe when route category is not resolved yet (`null`). */
-export function useArticlesInCategoryOrEmpty(cat: NavCategory | null): Article[] {
+export function useArticlesInCategoryOrEmpty(cat: string | null): Article[] {
   const { articles, stubPool } = useSiteData()
   return useMemo(() => {
     if (!cat) return []
@@ -65,6 +76,6 @@ export function useArticlesInCategoryOrEmpty(cat: NavCategory | null): Article[]
   }, [cat, articles, stubPool])
 }
 
-export function useFilterCount(id: ArticleCategory): number {
+export function useFilterCount(id: string): number {
   return useSiteData().filterCounts[id]
 }

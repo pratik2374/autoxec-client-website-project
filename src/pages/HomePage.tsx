@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
 import { HeroCarousel } from '../components/HeroCarousel'
@@ -19,11 +19,19 @@ export function HomePage() {
     heroSide,
     stories,
     filterCounts,
-    evMini,
-    engMini,
+    topDynamicRows,
+    bottomDynamicRows,
+    categories,
+    latestStoriesLimit,
   } = useSiteData()
 
-  const filter: ArticleCategory = queryValueToCategory(searchParams.get('category'))
+  const [page, setPage] = useState(1)
+
+  const filter: string = queryValueToCategory(searchParams.get('category')) || 'all'
+
+  useEffect(() => {
+    setPage(1)
+  }, [filter])
 
   const setFilter = (id: ArticleCategory) => {
     const q = categoryToQueryValue(id)
@@ -35,6 +43,13 @@ export function HomePage() {
     () => (filter === 'all' ? articles : articles.filter((a) => a.cat === filter)),
     [filter, articles],
   )
+
+  const displayedArticles = useMemo(
+    () => filteredArticles.slice(0, page * latestStoriesLimit),
+    [filteredArticles, page, latestStoriesLimit]
+  )
+
+  const hasMore = page * latestStoriesLimit < filteredArticles.length
 
   const toggleUpvote = (id: string, e: MouseEvent) => {
     e.stopPropagation()
@@ -103,35 +118,85 @@ export function HomePage() {
         </div>
       </div>
 
+      {topDynamicRows.map((row) => (
+        <section key={`top-${row.slug}`} className="cat-section cat-section--alt" aria-labelledby={`cat-${row.slug}`}>
+          <div className="cat-section-header">
+            <Link
+              id={`cat-${row.slug}`}
+              to={`/category/${row.slug}`}
+              className="cat-section-label condensed"
+              style={{ color: row.accentColor || '#B48FE8', textDecoration: 'none' }}
+            >
+              {row.title.toUpperCase()}
+            </Link>
+            <div className="cat-line" />
+            <Link to={`/category/${row.slug}`} className="see-all" style={{ textDecoration: 'none' }}>
+              All {row.title} →
+            </Link>
+          </div>
+          <div className="cat-grid">
+            {row.articles.length === 0 ? (
+              <div style={{
+                color: 'var(--border)',
+                padding: '48px 24px',
+                border: '1px dashed var(--border)',
+                borderRadius: '8px',
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                fontFamily: 'monospace',
+                fontSize: 12,
+                letterSpacing: 2
+              }}>
+                [ COMING SOON ]
+              </div>
+            ) : row.articles.map((c) => {
+              const k = c.upvotes >= 1000 ? `${(c.upvotes / 1000).toFixed(1)}K` : String(c.upvotes)
+              return (
+                <Link
+                  key={c.slug}
+                  to={articleUrl(c.slug)}
+                  className="cat-mini-card cat-mini-card--media"
+                  style={{ borderTop: `2px solid ${row.barColor || '#6B3FA0'}`, textDecoration: 'none' }}
+                >
+                  <img className="cat-mini-img" src={c.imageUrl} alt="" loading="lazy" decoding="async" />
+                  <div className="cat-mini-body">
+                    <div className="cat-mini-title">{c.title}</div>
+                    <div className="cat-mini-meta mono">5 MIN · {k} ↑</div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      ))}
+
       <div className="main-layout" id="articles">
         <section className="articles-section" aria-labelledby="latest-heading">
           <h2 id="latest-heading" className="visually-hidden">
             Latest stories
           </h2>
           <div className="filter-row">
-            {(
-              [
-                ['all', 'All Stories'],
-                ['ev', 'EV & Future'],
-                ['launch', 'Launches'],
-                ['engineering', 'Engineering'],
-                ['motorsport', 'Motorsport'],
-                ['twowheeler', 'Two-Wheelers'],
-              ] as const
-            ).map(([id, label]) => (
+            <button
+              type="button"
+              className={`filter-chip${filter === 'all' ? ' active' : ''}`}
+              onClick={() => setFilter('all' as any)}
+            >
+              All Stories <span className="filter-count">{filterCounts['all'] || 0}</span>
+            </button>
+            {categories.map((c) => (
               <button
-                key={id}
+                key={c.slug}
                 type="button"
-                className={`filter-chip${filter === id ? ' active' : ''}`}
-                onClick={() => setFilter(id)}
+                className={`filter-chip${filter === c.slug ? ' active' : ''}`}
+                onClick={() => setFilter(c.slug as any)}
               >
-                {label} <span className="filter-count">{filterCounts[id]}</span>
+                {c.title} <span className="filter-count">{filterCounts[c.slug as any] || 0}</span>
               </button>
             ))}
           </div>
 
           <div className="articles-grid">
-            {filteredArticles.map((a) => (
+            {displayedArticles.map((a) => (
               <ArticleCard
                 key={a.id}
                 article={a}
@@ -142,85 +207,73 @@ export function HomePage() {
             ))}
           </div>
 
-          <div className="load-more-wrap">
-            <button
-              type="button"
-              className="action-btn load-more-btn"
-              onClick={() => showToast('Loading more articles...')}
-            >
-              Load More Articles
-            </button>
-          </div>
+          {hasMore && (
+            <div className="load-more-wrap">
+              <button
+                type="button"
+                className="action-btn load-more-btn"
+                onClick={() => setPage(p => p + 1)}
+              >
+                Load More Articles
+              </button>
+            </div>
+          )}
         </section>
 
         <SidebarWidgets />
       </div>
 
-      <section className="cat-section" aria-labelledby="ev-section">
-        <div className="cat-section-header">
-          <Link
-            id="ev-section"
-            to="/category/ev"
-            className="cat-section-label condensed"
-            style={{ color: '#4AE080', textDecoration: 'none' }}
-          >
-            EV INTELLIGENCE
-          </Link>
-          <div className="cat-line" />
-          <Link to="/category/ev" className="see-all" style={{ textDecoration: 'none' }}>
-            All EV stories →
-          </Link>
-        </div>
-        <div className="cat-grid">
-          {evMini.map((c) => (
+      {bottomDynamicRows.map((row) => (
+        <section key={`bot-${row.slug}`} className="cat-section cat-section--alt" aria-labelledby={`cat-${row.slug}`}>
+          <div className="cat-section-header">
             <Link
-              key={c.slug}
-              to={articleUrl(c.slug)}
-              className="cat-mini-card cat-mini-card--media"
-              style={{ borderTop: '2px solid #1A7A3C', textDecoration: 'none' }}
+              id={`cat-${row.slug}`}
+              to={`/category/${row.slug}`}
+              className="cat-section-label condensed"
+              style={{ color: row.accentColor || '#B48FE8', textDecoration: 'none' }}
             >
-              <img className="cat-mini-img" src={c.imageUrl} alt="" loading="lazy" decoding="async" />
-              <div className="cat-mini-body">
-                <div className="cat-mini-title">{c.title}</div>
-                <div className="cat-mini-meta mono">{c.meta}</div>
-              </div>
+              {row.title.toUpperCase()}
             </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="cat-section cat-section--alt" aria-labelledby="eng-section">
-        <div className="cat-section-header">
-          <Link
-            id="eng-section"
-            to="/category/engineering"
-            className="cat-section-label condensed"
-            style={{ color: '#B48FE8', textDecoration: 'none' }}
-          >
-            ENGINEERING DEEP DIVES
-          </Link>
-          <div className="cat-line" />
-          <Link to="/category/engineering" className="see-all" style={{ textDecoration: 'none' }}>
-            All engineering →
-          </Link>
-        </div>
-        <div className="cat-grid">
-          {engMini.map((c) => (
-            <Link
-              key={c.slug}
-              to={articleUrl(c.slug)}
-              className="cat-mini-card cat-mini-card--media"
-              style={{ borderTop: '2px solid #6B3FA0', textDecoration: 'none' }}
-            >
-              <img className="cat-mini-img" src={c.imageUrl} alt="" loading="lazy" decoding="async" />
-              <div className="cat-mini-body">
-                <div className="cat-mini-title">{c.title}</div>
-                <div className="cat-mini-meta mono">{c.meta}</div>
-              </div>
+            <div className="cat-line" />
+            <Link to={`/category/${row.slug}`} className="see-all" style={{ textDecoration: 'none' }}>
+              All {row.title} →
             </Link>
-          ))}
-        </div>
-      </section>
+          </div>
+          <div className="cat-grid">
+            {row.articles.length === 0 ? (
+              <div style={{
+                color: 'var(--border)',
+                padding: '48px 24px',
+                border: '1px dashed var(--border)',
+                borderRadius: '8px',
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                fontFamily: 'monospace',
+                fontSize: 12,
+                letterSpacing: 2
+              }}>
+                [ COMING SOON ]
+              </div>
+            ) : row.articles.map((c) => {
+              const k = c.upvotes >= 1000 ? `${(c.upvotes / 1000).toFixed(1)}K` : String(c.upvotes)
+              return (
+                <Link
+                  key={c.slug}
+                  to={articleUrl(c.slug)}
+                  className="cat-mini-card cat-mini-card--media"
+                  style={{ borderTop: `2px solid ${row.barColor || '#6B3FA0'}`, textDecoration: 'none' }}
+                >
+                  <img className="cat-mini-img" src={c.imageUrl} alt="" loading="lazy" decoding="async" />
+                  <div className="cat-mini-body">
+                    <div className="cat-mini-title">{c.title}</div>
+                    <div className="cat-mini-meta mono">5 MIN · {k} ↑</div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      ))}
     </>
   )
 }

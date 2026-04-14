@@ -1,13 +1,31 @@
-import type { MouseEvent } from 'react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { PortableText } from '@portabletext/react'
 import { SidebarWidgets } from '../components/SidebarWidgets'
 import { categoryToPathSlug } from '../lib/site'
 import { articleUrl } from '../lib/site'
+import { urlForImage } from '../lib/sanity/image'
 import { useArticleBySlug, useSiteData } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
 import { NotFoundPage } from './NotFoundPage'
 
+const portableTextComponents = {
+  types: {
+    image: ({ value }: any) => {
+      if (!value?.asset?._ref) {
+        return null
+      }
+      return (
+        <img
+          alt={value.alt || ' '}
+          loading="lazy"
+          src={urlForImage(value) || ''}
+          style={{ width: '100%', borderRadius: '8px', margin: '24px 0' }}
+        />
+      )
+    },
+  },
+}
 export function ArticlePage() {
   const { slug } = useParams()
   const showToast = useToast()
@@ -17,7 +35,7 @@ export function ArticlePage() {
   const article = useArticleBySlug(slug)
 
   const share = useCallback(
-    (e?: MouseEvent) => {
+    (e?: React.MouseEvent) => {
       e?.stopPropagation()
       const url = `${window.location.origin}${article ? articleUrl(article.slug) : ''}`
       void navigator.clipboard?.writeText(url).catch(() => {})
@@ -25,6 +43,19 @@ export function ArticlePage() {
     },
     [article, showToast],
   )
+
+  useEffect(() => {
+    if (article) {
+      document.title = article.seoTitle || `${article.title} | AutoXec`
+      let metaDesc = document.querySelector('meta[name="description"]')
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta')
+        metaDesc.setAttribute('name', 'description')
+        document.head.appendChild(metaDesc)
+      }
+      metaDesc.setAttribute('content', article.seoDescription || article.excerpt || '')
+    }
+  }, [article])
 
   if (!article) {
     return <NotFoundPage />
@@ -122,16 +153,16 @@ export function ArticlePage() {
         )}
 
         <div className="prose">
-          {article.bodyParagraphs?.map((para, i) => (
-            <p key={i}>{para}</p>
-          ))}
-          {!article.bodyParagraphs?.length ? <p>{article.excerpt}</p> : null}
-          {!article.bodyParagraphs?.length ? (
-            <p style={{ color: 'var(--muted)' }}>
-              Full body copy ships with each published piece — this demo follows the AutoXec article template from the
-              editorial architecture document: pull quotes, mono for specs, and keyed takeaways.
-            </p>
-          ) : null}
+          {article.content ? (
+            <PortableText value={article.content} components={portableTextComponents} />
+          ) : (
+            <>
+              {article.bodyParagraphs?.map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+              {!article.bodyParagraphs?.length ? <p>{article.excerpt}</p> : null}
+            </>
+          )}
         </div>
 
         <blockquote className="pull-quote">

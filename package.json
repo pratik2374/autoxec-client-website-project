@@ -11,6 +11,7 @@
     "studio:build": "npm run build --prefix studio"
   },
   "dependencies": {
+    "@portabletext/react": "^6.0.3",
     "@sanity/client": "^7.20.0",
     "@sanity/image-url": "^2.1.0",
     "firebase": "^12.11.0",

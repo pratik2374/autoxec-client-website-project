@@ -1,4 +1,5 @@
 import { article } from './article'
-import { homePage } from './homePage'
+import { category } from './category'
+import { siteConfig } from './siteConfig'
 
-export const schemaTypes = [article, homePage]
+export const schemaTypes = [category, article, siteConfig]

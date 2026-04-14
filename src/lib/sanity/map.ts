@@ -1,10 +1,6 @@
 import type {
   Article,
-  ArticleCategory,
-  EngMiniCard,
-  EvMiniCard,
   HeroCategoryPath,
-  HeroSideItem,
   HeroSlide,
   NavCategory,
   StoryCard,
@@ -21,41 +17,60 @@ export type RawArticle = {
   badgeClass?: string
   title?: string
   excerpt?: string
-  deck?: string
-  bodyParagraphs?: string[]
-  keyTakeaways?: string[]
+  content?: any
+  seoTitle?: string
+  seoDescription?: string
   tags?: string[]
   upvotes?: number
-  readTime?: string
-  meta?: string
-  thumbLabel?: string
-  thumbGradient?: string
   imageUrl?: string
   mainImage?: Parameters<typeof urlForImage>[0]
-  deepDive?: boolean
   published?: string
-  updated?: string
-  heroCategoryLabel?: string
-  heroAuthorLine?: string
-  heroUpvotesLabel?: string
+  _updatedAt?: string
+  _createdAt?: string
 }
 
-const CAT_SET = new Set<Article['cat']>(['ev', 'launch', 'engineering', 'motorsport', 'twowheeler', 'industry'])
+export type RawDynamicCategory = {
+  slug: string
+  title: string
+  description?: string
+  badgeClass?: string
+  accentColor?: string
+  barColor?: string
+}
 
-function asCat(v: string | undefined): Article['cat'] {
+export type RawCategoryRow = {
+  category?: RawDynamicCategory
+  strategy?: 'latest' | 'popular' | 'manual'
+  limit?: number
+  manualArticles?: RawArticle[]
+}
+
+export type RawSiteConfig = {
+  tickerItems?: string[]
+  exploreTopics?: string[]
+  latestStoriesLimit?: number
+  heroConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
+  heroSideConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
+  quickReadsConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
+  trendingConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
+  topCategoryRows?: RawCategoryRow[]
+  bottomCategoryRows?: RawCategoryRow[]
+}
+
+function asCat(v: string | undefined): any {
   const c = (v || 'engineering').toLowerCase()
   if (c === 'launches') return 'launch'
-  if (CAT_SET.has(c as Article['cat'])) return c as Article['cat']
-  return 'engineering'
+  return c
 }
 
-const BADGE: Record<Article['cat'], Article['badgeClass']> = {
-  ev: 'ev',
-  launch: 'launch',
-  engineering: 'engineering',
-  motorsport: 'motorsport',
-  twowheeler: 'twowheeler',
-  industry: 'industry',
+function formatDate(isoString: string | undefined) {
+  if (!isoString) return ''
+  try {
+    const d = new Date(isoString)
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  } catch (e) {
+    return isoString
+  }
 }
 
 export function mapRawToArticle(raw: RawArticle): Article | null {
@@ -63,158 +78,111 @@ export function mapRawToArticle(raw: RawArticle): Article | null {
   if (!slug || !raw.title) return null
   const cat = asCat(raw.cat)
   const img = urlForImage(raw.mainImage)
+  
+  const createdDate = raw.published || formatDate(raw._createdAt)
+  
   return {
     id: raw._id,
     slug,
     cat,
     badge: raw.badge || cat.toUpperCase(),
-    badgeClass: (raw.badgeClass as Article['badgeClass']) || BADGE[cat],
+    badgeClass: (raw.badgeClass as any) || cat,
     title: raw.title,
     excerpt: raw.excerpt || '',
-    deck: raw.deck,
-    bodyParagraphs: raw.bodyParagraphs,
-    keyTakeaways: raw.keyTakeaways,
-    tags: raw.tags,
-    upvotes: typeof raw.upvotes === 'number' ? raw.upvotes : 0,
-    readTime: raw.readTime || '5 MIN READ',
-    meta: raw.meta || 'PREETAM · AUTOXEC',
-    thumbLabel: raw.thumbLabel || 'AX',
-    thumbGradient: raw.thumbGradient || 'linear-gradient(135deg,#1a0f30,#2d1060)',
+    content: raw.content,
+    seoTitle: raw.seoTitle,
+    seoDescription: raw.seoDescription,
+    tags: raw.tags || [],
+    upvotes: typeof raw.upvotes === 'number' ? raw.upvotes : Math.floor(Math.random() * 500) + 500,
+    readTime: '5 MIN READ',
+    meta: 'PREETAM · AUTOXEC',
+    thumbLabel: 'AX',
+    thumbGradient: 'linear-gradient(135deg,#1a0f30,#2d1060)',
     imageUrl: img || raw.imageUrl,
-    deepDive: raw.deepDive,
-    published: raw.published,
-    updated: raw.updated,
+    published: createdDate,
+    updated: formatDate(raw._updatedAt),
   }
 }
 
-function formatHeroUpvotes(n: number, override?: string): string {
-  if (override?.trim()) return override.trim()
+function formatHeroUpvotes(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K UPVOTES`
   return `${n} UPVOTES`
 }
 
-export function articleToHeroSlide(a: Article, raw?: RawArticle): HeroSlide {
+export function articleToHeroSlide(a: Article): HeroSlide {
   const cat = a.cat as NavCategory
   const path = categoryToPathSlug(cat) as HeroCategoryPath
   const categoryClass = a.badgeClass
   return {
     slug: a.slug,
-    category: raw?.heroCategoryLabel?.trim() || a.badge,
-    categoryClass,
+    category: a.badge,
+    categoryClass: categoryClass as HeroSlide['categoryClass'],
     categoryPath: path,
     title: a.title,
-    author: raw?.heroAuthorLine?.trim() || 'PREETAM · AUTOXEC',
+    author: 'PREETAM · AUTOXEC',
     readTime: a.readTime,
-    upvotes: formatHeroUpvotes(a.upvotes, raw?.heroUpvotesLabel),
+    upvotes: formatHeroUpvotes(a.upvotes || 500),
     imageUrl: a.imageUrl || '',
     imageAlt: a.title,
   }
 }
 
-export type RawStory = {
-  slug?: string
-  icon?: string
-  title?: string
-  meta?: string
-  gradient?: string
-  imageUrl?: string
-}
-
-export type RawTrend = { num?: string; slug?: string; title?: string; meta?: string }
-
-export type RawMini = { slug?: string; title?: string; meta?: string; imageUrl?: string }
-
-export type RawHomePage = {
-  ticker?: string[]
-  heroSlideArticles?: RawArticle[] | null
-  heroSideArticles?: RawArticle[] | null
-  stories?: RawStory[] | null
-  trending?: RawTrend[] | null
-  topics?: string[] | null
-  evMini?: RawMini[] | null
-  engMini?: RawMini[] | null
-  filterCounts?: Partial<Record<ArticleCategory, number>> | null
-}
-
-export function mapSanityHomeToHeroSlides(articles: RawArticle[] | null | undefined): HeroSlide[] {
-  if (!articles?.length) return []
-  const out: HeroSlide[] = []
-  for (const r of articles) {
-    const a = mapRawToArticle(r)
-    if (a) out.push(articleToHeroSlide(a, r))
+// STRATEGY FUNCTION
+export function resolveStrategyArticles(
+  allArticles: Article[],
+  strategy?: 'latest' | 'popular' | 'manual',
+  manualRaw?: RawArticle[],
+  filterCat?: string,
+  limit: number = 5
+): Article[] {
+  if (strategy === 'manual' && manualRaw && manualRaw.length > 0) {
+    return manualRaw.map(mapRawToArticle).filter((a): a is Article => a !== null).slice(0, limit)
   }
-  return out
+
+  let pool = [...allArticles]
+  if (filterCat) {
+    pool = pool.filter((a) => a.cat === filterCat)
+  }
+
+  if (strategy === 'popular') {
+    pool.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0))
+  } else {
+    // Array is already sorted by latest natively by GROQ allArticlesQuery
+  }
+
+  return pool.slice(0, limit)
 }
 
-function formatSideMeta(a: Article): string {
-  const rt = a.readTime.replace(/\s*READ\s*/i, '').trim()
-  const k = a.upvotes >= 1000 ? `${(a.upvotes / 1000).toFixed(1)}K` : String(a.upvotes)
-  return `${rt} · ${k} ↑`
+export function generateStories(articles: Article[], strategy?: 'latest' | 'popular' | 'manual', manualRaw?: RawArticle[], limit: number = 8): StoryCard[] {
+  const selected = resolveStrategyArticles(articles, strategy, manualRaw, undefined, limit)
+  return selected.map((a) => ({
+    slug: a.slug,
+    icon: '▸',
+    title: a.title,
+    meta: `${a.cat.toUpperCase()} · 3 MIN`,
+    gradient: 'linear-gradient(135deg,#1a0a30,#3d1a7a)',
+    imageUrl: a.imageUrl || '',
+  }))
 }
 
-export function mapArticlesToHeroSide(articles: RawArticle[] | null | undefined): HeroSideItem[] {
-  const rows: HeroSideItem[] = []
-  if (!articles?.length) return rows
-  for (const r of articles) {
-    const a = mapRawToArticle(r)
-    if (!a) continue
-    rows.push({
+export function generateTrending(articles: Article[], strategy?: 'latest' | 'popular' | 'manual', manualRaw?: RawArticle[], limit: number = 5): TrendingRow[] {
+  const selected = resolveStrategyArticles(articles, strategy || 'popular', manualRaw, undefined, limit)
+  return selected.map((a, i) => {
+    const k = a.upvotes >= 1000 ? `${(a.upvotes / 1000).toFixed(1)}K` : String(a.upvotes)
+    return {
+      num: String(i + 1).padStart(2, '0'),
       slug: a.slug,
-      cat: a.badge as HeroSideItem['cat'],
-      catClass: a.badgeClass as HeroSideItem['catClass'],
       title: a.title,
-      meta: formatSideMeta(a),
-      imageUrl: a.imageUrl || '',
-    } as HeroSideItem)
+      meta: `${k} ↑ · RECENT`,
+    }
+  })
+}
+
+export function generateFilterCounts(articles: Article[]): Record<string, number> {
+  const counts: Record<string, number> = { all: articles.length }
+  for (const a of articles) {
+    const cat = a.cat as string
+    counts[cat] = (counts[cat] || 0) + 1
   }
-  return rows
-}
-
-export function mapRawStories(raw: RawStory[] | null | undefined): StoryCard[] {
-  if (!raw?.length) return []
-  return raw.map((s, i) => ({
-    slug: s.slug?.trim() || `story-${i}`,
-    icon: s.icon?.trim() || '▸',
-    title: s.title || 'Untitled',
-    meta: s.meta || '',
-    gradient: s.gradient || 'linear-gradient(135deg,#1a0a30,#3d1a7a)',
-    imageUrl: s.imageUrl || '',
-  })) as StoryCard[]
-}
-
-export function mapRawTrending(raw: RawTrend[] | null | undefined): TrendingRow[] {
-  if (!raw?.length) return []
-  return raw.map((t, i) => ({
-    num: t.num || String(i + 1).padStart(2, '0'),
-    slug: t.slug || '',
-    title: t.title || '',
-    meta: t.meta || '',
-  })) as TrendingRow[]
-}
-
-export function mapRawEvMini(raw: RawMini[] | null | undefined): EvMiniCard[] {
-  if (!raw?.length) return []
-  return raw.map((m, i) => ({
-    slug: m.slug?.trim() || `ev-${i}`,
-    title: m.title || '',
-    meta: m.meta || '',
-    imageUrl: m.imageUrl || '',
-  })) as EvMiniCard[]
-}
-
-export function mapRawEngMini(raw: RawMini[] | null | undefined): EngMiniCard[] {
-  if (!raw?.length) return []
-  return raw.map((m, i) => ({
-    slug: m.slug?.trim() || `eng-${i}`,
-    title: m.title || '',
-    meta: m.meta || '',
-    imageUrl: m.imageUrl || '',
-  })) as EngMiniCard[]
-}
-
-export function mergeFilterCounts(
-  partial: Partial<Record<ArticleCategory, number>> | null | undefined,
-  defaults: Record<ArticleCategory, number>,
-): Record<ArticleCategory, number> {
-  return { ...defaults, ...partial }
+  return counts
 }

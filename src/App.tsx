@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import { useIsDataLoading } from './context/SiteDataContext'
+import { LoadingScreen } from './components/LoadingScreen'
 import { Layout } from './components/Layout'
 import { AboutPage } from './pages/AboutPage'
 import { ArticlePage } from './pages/ArticlePage'
@@ -15,27 +18,50 @@ import { SearchPage } from './pages/SearchPage'
 import { SubscribePage } from './pages/SubscribePage'
 
 export default function App() {
+  const isDataLoading = useIsDataLoading()
+  const [exiting, setExiting] = useState(false)
+  const [showLoader, setShowLoader] = useState(true)
+
+  // When sanity data finishes loading, immediately trigger exit sequence
+  useEffect(() => {
+    if (!isDataLoading) {
+      setExiting(true)
+      // Wait for exit animations to finish (0.4s drop + 0.4s fade = 0.8s) before unmounting
+      const timer = setTimeout(() => {
+        setShowLoader(false)
+      }, 800)
+      return () => clearTimeout(timer)
+    }
+  }, [isDataLoading])
+
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="category/:slug" element={<CategoryPage />} />
-        <Route path="article/:slug" element={<ArticlePage />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="quick-reads" element={<QuickReadsPage />} />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="media" element={<MediaKitPage />} />
-        <Route path="community" element={<CommunityPage />} />
-        <Route path="subscribe" element={<SubscribePage />} />
-        <Route path="contact" element={<ContactPage />} />
-        <Route path="privacy" element={<PrivacyPage />} />
-        <Route path="terms" element={<TermsPage />} />
-        <Route path="editorial-policy" element={<EditorialPolicyPage />} />
-        <Route path="corrections" element={<CorrectionsPolicyPage />} />
-        <Route path="author/preetam" element={<AuthorPage />} />
-        <Route path="404" element={<NotFoundPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+    <>
+      {showLoader && (
+        <LoadingScreen exiting={exiting} />
+      )}
+      <div className={!isDataLoading ? 'app-slide-in' : 'visually-hidden'}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="category/:slug" element={<CategoryPage />} />
+            <Route path="article/:slug" element={<ArticlePage />} />
+            <Route path="search" element={<SearchPage />} />
+            <Route path="quick-reads" element={<QuickReadsPage />} />
+            <Route path="about" element={<AboutPage />} />
+            <Route path="media" element={<MediaKitPage />} />
+            <Route path="community" element={<CommunityPage />} />
+            <Route path="subscribe" element={<SubscribePage />} />
+            <Route path="contact" element={<ContactPage />} />
+            <Route path="privacy" element={<PrivacyPage />} />
+            <Route path="terms" element={<TermsPage />} />
+            <Route path="editorial-policy" element={<EditorialPolicyPage />} />
+            <Route path="corrections" element={<CorrectionsPolicyPage />} />
+            <Route path="author/preetam" element={<AuthorPage />} />
+            <Route path="404" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </div>
+    </>
   )
 }

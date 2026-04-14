@@ -2,8 +2,7 @@ import type { MouseEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
-import { CATEGORY_META, type NavCategory } from '../data'
-import { useArticlesInCategoryOrEmpty } from '../context/SiteDataContext'
+import { useArticlesInCategoryOrEmpty, useSiteData } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
 import { categoryToPathSlug, pathSlugToCategory } from '../lib/site'
 import { NotFoundPage } from './NotFoundPage'
@@ -14,10 +13,13 @@ export function CategoryPage() {
   const showToast = useToast()
   const [upvoted, setUpvoted] = useState<Record<string, boolean>>({})
 
+  const { categories } = useSiteData()
+
   const cat = slug ? pathSlugToCategory(slug) : null
   const sort = searchParams.get('sort') ?? 'latest'
 
   const baseList = useArticlesInCategoryOrEmpty(cat)
+  const metaCategory = categories.find((c) => c.slug === cat)
 
   const items = useMemo(() => {
     if (!cat) return []
@@ -50,7 +52,13 @@ export function CategoryPage() {
     return <NotFoundPage />
   }
 
-  const meta = CATEGORY_META[cat]
+  const meta = metaCategory || {
+    title: cat.toUpperCase(),
+    description: `Articles related to ${cat}`,
+    accentColor: '#B48FE8',
+    barColor: '#6B3FA0',
+  }
+  
   const featured = items[0]
   const rest = items.slice(1)
 
@@ -58,13 +66,13 @@ export function CategoryPage() {
     <div>
       <div
         style={{
-          borderTop: `3px solid ${meta.bar}`,
+          borderTop: `3px solid ${meta.barColor}`,
           background: 'linear-gradient(180deg, rgba(42,31,69,0.35) 0%, transparent 100%)',
         }}
       >
         <div className="page-shell-wide" style={{ paddingTop: 28 }}>
-          <h1 className="page-title condensed" style={{ color: meta.accent }}>
-            {meta.headline}
+          <h1 className="page-title condensed" style={{ color: meta.accentColor }}>
+            {meta.title}
           </h1>
           <p className="page-lead">{meta.description}</p>
           <p className="mono" style={{ fontSize: 12, color: 'var(--dim)', marginBottom: 24 }}>
@@ -145,11 +153,11 @@ export function CategoryPage() {
         </div>
         <p className="mono" style={{ fontSize: 11, color: 'var(--dim)', marginTop: 24 }}>
           Other categories:{' '}
-          {(['ev', 'launch', 'engineering', 'motorsport', 'twowheeler', 'industry'] as NavCategory[])
-            .filter((c) => c !== cat)
+          {categories
+            .filter((c) => c.slug !== cat)
             .map((c) => (
-              <Link key={c} to={`/category/${categoryToPathSlug(c)}`} style={{ color: 'var(--purpleL)', marginRight: 10 }}>
-                {CATEGORY_META[c].headline}
+              <Link key={c.slug} to={`/category/${categoryToPathSlug(c.slug)}`} style={{ color: 'var(--purpleL)', marginRight: 10 }}>
+                {c.title}
               </Link>
             ))}
         </p>

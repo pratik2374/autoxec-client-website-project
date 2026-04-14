@@ -1,15 +1,7 @@
-export type ArticleCategory =
-  | 'all'
-  | 'ev'
-  | 'launch'
-  | 'engineering'
-  | 'motorsport'
-  | 'twowheeler'
-  | 'industry'
+export type ArticleCategory = string
+export type NavCategory = string
 
-export type NavCategory = Exclude<ArticleCategory, 'all'>
-
-export const NAV_CATEGORIES: { id: NavCategory | 'all'; label: string }[] = [
+export const NAV_CATEGORIES: { id: string; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'ev', label: 'EV & Future' },
   { id: 'launch', label: 'Launches' },
@@ -224,11 +216,11 @@ export const STORIES = [
   },
 ] as const
 
-export type StoryCard = (typeof STORIES)[number]
-export type HeroSideItem = (typeof HERO_SIDE)[number]
-export type TrendingRow = (typeof TRENDING)[number]
-export type EvMiniCard = (typeof EV_MINI)[number]
-export type EngMiniCard = (typeof ENG_MINI)[number]
+export type StoryCard = { slug: string; icon: string; title: string; meta: string; gradient: string; imageUrl: string }
+export type HeroSideItem = { slug: string; cat: string; catClass: string; title: string; meta: string; imageUrl: string }
+export type TrendingRow = { num: string; slug: string; title: string; meta: string }
+export type EvMiniCard = { slug: string; title: string; meta: string; imageUrl: string }
+export type EngMiniCard = { slug: string; title: string; meta: string; imageUrl: string }
 
 export const FILTER_COUNTS: Record<ArticleCategory, number> = {
   all: 24,
@@ -243,13 +235,16 @@ export const FILTER_COUNTS: Record<ArticleCategory, number> = {
 export type Article = {
   id: string
   slug: string
-  cat: Exclude<ArticleCategory, 'all'>
+  cat: string
   badge: string
   badgeClass: 'ev' | 'launch' | 'engineering' | 'motorsport' | 'twowheeler' | 'industry'
   title: string
   excerpt: string
   deck?: string
   bodyParagraphs?: string[]
+  content?: any
+  seoTitle?: string
+  seoDescription?: string
   keyTakeaways?: string[]
   tags?: string[]
   upvotes: number
@@ -601,7 +596,7 @@ function buildStubArticle(
   }
 }
 
-function heroSideCat(h: (typeof HERO_SIDE)[number]): Article['cat'] {
+function heroSideCat(h: HeroSideItem): Article['cat'] {
   if (h.catClass === 'ev') return 'ev'
   if (h.catClass === 'motorsport') return 'motorsport'
   return 'engineering'
@@ -639,7 +634,7 @@ export function buildStubPool(input: StubPoolInput): Article[] {
         slug: h.slug,
         cat: heroSideCat(h),
         badge: h.cat,
-        badgeClass: h.catClass,
+        badgeClass: h.catClass as Article['badgeClass'],
         title: h.title,
         excerpt: 'From the homepage hero rail — open for full technical analysis.',
         imageUrl: h.imageUrl,
@@ -722,10 +717,10 @@ export function allArticlesMerged(): Article[] {
   return allArticlesMergedFrom(ARTICLES, STUB_POOL)
 }
 
-export function articlesInCategoryFrom(cat: NavCategory, articles: Article[], stubPool: Article[]): Article[] {
+export function articlesInCategoryFrom(cat: string, articles: Article[], stubPool: Article[]): Article[] {
   return allArticlesMergedFrom(articles, stubPool).filter((a) => a.cat === cat)
 }
 
-export function articlesInCategory(cat: NavCategory): Article[] {
+export function articlesInCategory(cat: string): Article[] {
   return articlesInCategoryFrom(cat, ARTICLES, STUB_POOL)
 }

@@ -1,48 +1,30 @@
-import type { ArticleCategory, NavCategory } from '../data'
 
-/** Path segments used in `/category/:slug` and `/?category=` (per AutoXec_AllPages.docx). */
-export type CategoryPathSlug =
-  | 'ev'
-  | 'launches'
-  | 'engineering'
-  | 'motorsport'
-  | 'two-wheelers'
-  | 'industry'
-
-export function categoryToPathSlug(cat: NavCategory): CategoryPathSlug {
-  const m: Record<NavCategory, CategoryPathSlug> = {
+export function categoryToPathSlug(cat: string): string {
+  const m: Record<string, string> = {
     ev: 'ev',
     launch: 'launches',
-    engineering: 'engineering',
-    motorsport: 'motorsport',
     twowheeler: 'two-wheelers',
-    industry: 'industry',
   }
-  return m[cat]
+  return m[cat] ?? cat
 }
 
-export function pathSlugToCategory(slug: string): NavCategory | null {
-  const m: Record<CategoryPathSlug, NavCategory> = {
+export function pathSlugToCategory(slug: string): string {
+  const m: Record<string, string> = {
     ev: 'ev',
     launches: 'launch',
-    engineering: 'engineering',
-    motorsport: 'motorsport',
     'two-wheelers': 'twowheeler',
-    industry: 'industry',
   }
-  return m[slug as CategoryPathSlug] ?? null
+  return m[slug] ?? slug
 }
 
-/** Homepage filter query `?category=` uses the same tokens as path slugs. */
-export function categoryToQueryValue(cat: ArticleCategory): string | null {
+export function categoryToQueryValue(cat: string): string | null {
   if (cat === 'all') return null
-  return categoryToPathSlug(cat as NavCategory)
+  return categoryToPathSlug(cat)
 }
 
-export function queryValueToCategory(value: string | null): ArticleCategory {
+export function queryValueToCategory(value: string | null): string {
   if (!value) return 'all'
-  const c = pathSlugToCategory(value)
-  return c ?? 'all'
+  return pathSlugToCategory(value)
 }
 
 export function articleUrl(slug: string): string {

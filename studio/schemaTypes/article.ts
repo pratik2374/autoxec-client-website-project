@@ -1,28 +1,26 @@
 import { defineField, defineType } from 'sanity'
 
-const categories = [
-  { title: 'EV', value: 'ev' },
-  { title: 'Launch', value: 'launch' },
-  { title: 'Engineering', value: 'engineering' },
-  { title: 'Motorsport', value: 'motorsport' },
-  { title: 'Two-wheeler', value: 'twowheeler' },
-  { title: 'Industry', value: 'industry' },
-]
 
-const badgeClasses = [
-  { title: 'EV', value: 'ev' },
-  { title: 'Launch', value: 'launch' },
-  { title: 'Engineering', value: 'engineering' },
-  { title: 'Motorsport', value: 'motorsport' },
-  { title: 'Two-wheeler', value: 'twowheeler' },
-  { title: 'Industry', value: 'industry' },
-]
 
 export const article = defineType({
   name: 'article',
-  title: 'Article',
+  title: 'Blog Article',
   type: 'document',
+  fieldsets: [
+    {
+      name: 'seo',
+      title: 'SEO Settings',
+      description: 'Perfectly customize how this post appears in search engines and social media.',
+      options: { collapsible: true, collapsed: false },
+    },
+  ],
   fields: [
+    defineField({
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+      validation: (r) => r.required(),
+    }),
     defineField({
       name: 'slug',
       title: 'Slug',
@@ -33,89 +31,13 @@ export const article = defineType({
     defineField({
       name: 'cat',
       title: 'Category',
-      type: 'string',
-      options: { list: categories, layout: 'dropdown' },
+      type: 'reference',
+      to: [{ type: 'category' }],
       validation: (r) => r.required(),
-    }),
-    defineField({
-      name: 'badge',
-      title: 'Badge label',
-      type: 'string',
-      description: 'e.g. EV INTELLIGENCE, LAUNCH',
-    }),
-    defineField({
-      name: 'badgeClass',
-      title: 'Badge style',
-      type: 'string',
-      options: { list: badgeClasses, layout: 'dropdown' },
-    }),
-    defineField({
-      name: 'title',
-      title: 'Title',
-      type: 'string',
-      validation: (r) => r.required(),
-    }),
-    defineField({
-      name: 'excerpt',
-      title: 'Excerpt',
-      type: 'text',
-      rows: 3,
-    }),
-    defineField({
-      name: 'deck',
-      title: 'Deck',
-      type: 'text',
-      rows: 2,
-    }),
-    defineField({
-      name: 'bodyParagraphs',
-      title: 'Body (paragraphs)',
-      type: 'array',
-      of: [{ type: 'text', rows: 4 }],
-    }),
-    defineField({
-      name: 'keyTakeaways',
-      title: 'Key takeaways',
-      type: 'array',
-      of: [{ type: 'string' }],
-    }),
-    defineField({
-      name: 'tags',
-      title: 'Tags',
-      type: 'array',
-      of: [{ type: 'string' }],
-    }),
-    defineField({
-      name: 'upvotes',
-      title: 'Upvotes (number)',
-      type: 'number',
-      initialValue: 0,
-    }),
-    defineField({
-      name: 'readTime',
-      title: 'Read time',
-      type: 'string',
-      description: 'e.g. 8 MIN READ',
-      initialValue: '5 MIN READ',
-    }),
-    defineField({
-      name: 'meta',
-      title: 'Byline / meta line',
-      type: 'string',
-    }),
-    defineField({
-      name: 'thumbLabel',
-      title: 'Thumb label (fallback)',
-      type: 'string',
-    }),
-    defineField({
-      name: 'thumbGradient',
-      title: 'Thumb gradient CSS (fallback)',
-      type: 'string',
     }),
     defineField({
       name: 'mainImage',
-      title: 'Hero / card image',
+      title: 'Hero Image',
       type: 'image',
       options: { hotspot: true },
     }),
@@ -123,45 +45,81 @@ export const article = defineType({
       name: 'imageUrl',
       title: 'External image URL (optional)',
       type: 'url',
-      description: 'Overrides asset if set.',
+      description: 'Overrides Hero Image asset if set.',
     }),
     defineField({
-      name: 'deepDive',
-      title: 'Deep dive',
-      type: 'boolean',
+      name: 'content',
+      title: 'Content (Word-Style Editor)',
+      type: 'array',
+      of: [
+        { type: 'block' },
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            {
+              name: 'alt',
+              type: 'string',
+              title: 'Alternative text',
+              description: 'Important for SEO and accessibility.',
+            },
+          ],
+        },
+      ],
+      description: 'Write your article here just like a Word Document. Add Headings (H2, H3), bold text, and drag-and-drop images right into the text!',
+    }),
+    defineField({
+      name: 'excerpt',
+      title: 'Excerpt',
+      type: 'text',
+      rows: 3,
+      description: 'A short description shown on the homepage.',
+    }),
+    // ---- SEO fields ----
+    defineField({
+      name: 'seoTitle',
+      title: 'SEO Meta Title',
+      type: 'string',
+      fieldset: 'seo',
+      description: 'If empty, defaults to the article Title.',
+    }),
+    defineField({
+      name: 'seoDescription',
+      title: 'SEO Meta Description',
+      type: 'text',
+      rows: 2,
+      fieldset: 'seo',
+      description: 'If empty, defaults to the Excerpt.',
+    }),
+    // Optional / Advanced
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: { layout: 'tags' },
+    }),
+    defineField({
+      name: 'upvotes',
+      title: 'Base Upvotes',
+      type: 'number',
+      initialValue: Math.floor(Math.random() * 500) + 500, // Fun default
     }),
     defineField({
       name: 'published',
-      title: 'Published label',
+      title: 'Published Date Override (String)',
       type: 'string',
-    }),
-    defineField({
-      name: 'updated',
-      title: 'Updated label',
-      type: 'string',
-    }),
-    defineField({
-      name: 'heroCategoryLabel',
-      title: 'Hero: category line override',
-      type: 'string',
-      description: 'Optional — defaults to badge.',
-    }),
-    defineField({
-      name: 'heroAuthorLine',
-      title: 'Hero: author line',
-      type: 'string',
-    }),
-    defineField({
-      name: 'heroUpvotesLabel',
-      title: 'Hero: upvotes label',
-      type: 'string',
-      description: 'e.g. 2.4K UPVOTES',
+      description: 'e.g. 28 Mar 2026',
     }),
   ],
   preview: {
-    select: { title: 'title', media: 'mainImage', cat: 'cat' },
-    prepare({ title, media, cat }) {
-      return { title: title || 'Untitled', subtitle: cat, media }
+    select: {
+      title: 'title',
+      subtitle: 'cat.title',
+      media: 'mainImage',
+    },
+    prepare({ title, subtitle, media }) {
+      return { title: title || 'Untitled', subtitle, media }
     },
   },
 })
