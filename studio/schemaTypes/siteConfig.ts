@@ -19,6 +19,62 @@ export const siteConfig = defineType({
       description: 'Used internally. Only keep ONE configuration document active.',
     }),
 
+    // NAVIGATION
+    defineField({
+      name: 'navigation',
+      title: 'Main Navigation',
+      type: 'array',
+      description: 'Define the top level navigation bar for the site.',
+      of: [
+        {
+          type: 'object',
+          name: 'navItem',
+          title: 'Navigation Item',
+          fields: [
+            {
+              name: 'title',
+              title: 'Title',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'linkType',
+              title: 'Type of Link',
+              type: 'string',
+              options: { list: ['dropdown', 'category', 'path'], layout: 'radio' },
+              initialValue: 'path',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'path',
+              title: 'Internal Path',
+              type: 'string',
+              description: 'e.g. /quick-reads or /get-advice. Must start with a slash.',
+              hidden: ({ parent }) => parent?.linkType !== 'path',
+            },
+            {
+              name: 'category',
+              title: 'Target Category',
+              type: 'reference',
+              to: [{ type: 'category' }],
+              hidden: ({ parent }) => parent?.linkType !== 'category',
+            },
+            {
+              name: 'dropdownItems',
+              title: 'Dropdown Categories',
+              type: 'array',
+              of: [{ type: 'reference', to: [{ type: 'category' }] }],
+              hidden: ({ parent }) => parent?.linkType !== 'dropdown',
+            },
+          ],
+          preview: {
+            select: { title: 'title', subtitle: 'linkType' },
+            prepare({ title, subtitle }) { return { title: title || 'Unnamed', subtitle: `Type: ${subtitle}` } }
+          }
+        }
+      ]
+    }),
+
     // TICKER
     defineField({
       name: 'tickerItems',
@@ -110,7 +166,7 @@ export const siteConfig = defineType({
           name: 'manualArticles',
           title: 'Manual Articles Selection',
           type: 'array',
-          of: [{ type: 'reference', to: [{ type: 'article' }] }],
+          of: [{ type: 'reference', to: [{ type: 'quickRead' }] }],
           description: 'Only used if Strategy is "Manual Selection".',
           hidden: ({ parent }) => parent?.strategy !== 'manual',
         },
@@ -149,6 +205,53 @@ export const siteConfig = defineType({
       ],
     }),
 
+    // TYPOGRAPHY CONFIG
+    defineField({
+      name: 'typographyConfig',
+      title: 'Global Typography',
+      type: 'object',
+      options: { collapsible: true, collapsed: false },
+      fields: [
+        {
+          name: 'fontFamily',
+          title: 'Primary Font Family',
+          type: 'string',
+          initialValue: "'Barlow', sans-serif",
+          description: 'Select a font for all body and UI text. The site loads these from Google Fonts.',
+          options: {
+            list: [
+              { title: 'Barlow (Current — Clean, Modern)', value: "'Barlow', sans-serif" },
+              { title: 'Barlow Condensed (Compact, Editorial)', value: "'Barlow Condensed', sans-serif" },
+              { title: 'Inter (Neutral, Highly Readable)', value: "'Inter', sans-serif" },
+              { title: 'Outfit (Friendly, Tech-forward)', value: "'Outfit', sans-serif" },
+              { title: 'Roboto (Classic Google)', value: "'Roboto', sans-serif" },
+              { title: 'IBM Plex Sans (Technical, Precise)', value: "'IBM Plex Sans', sans-serif" },
+              { title: 'DM Sans (Modern, Clean)', value: "'DM Sans', sans-serif" },
+              { title: 'Sora (Futuristic, Bold)', value: "'Sora', sans-serif" },
+              { title: 'Space Grotesk (Geometric, Distinctive)', value: "'Space Grotesk', sans-serif" },
+              { title: 'Manrope (Engineering Feel)', value: "'Manrope', sans-serif" },
+            ],
+            layout: 'dropdown',
+          },
+        },
+        {
+          name: 'lineHeight',
+          title: 'Global Line Height',
+          type: 'number',
+          initialValue: 1.6,
+          description: 'Vertical spacing between lines. Recommended: 1.5 – 1.8. Current default: 1.6',
+          validation: (Rule: any) => Rule.min(1).max(3),
+        },
+        {
+          name: 'letterSpacing',
+          title: 'Global Letter Spacing (px)',
+          type: 'number',
+          initialValue: 0,
+          description: 'Horizontal spacing between characters. 0 = default; try 0.2–0.5 for a wider feel.',
+        },
+      ]
+    }),
+
     // EXPLORE TOPICS
     defineField({
       name: 'exploreTopics',
@@ -165,6 +268,16 @@ export const siteConfig = defineType({
       type: 'number',
       description: 'Number of articles to load initially in the main feed before showing the "Load More" button.',
       initialValue: 6,
+      validation: Rule => Rule.min(1).max(50),
+    }),
+
+    // CATEGORY PAGE LIMIT
+    defineField({
+      name: 'categoryPageLimit',
+      title: 'Category Page — Articles Per Page',
+      type: 'number',
+      description: 'How many articles to show per page on category pages. Users can navigate with Previous/Next.',
+      initialValue: 9,
       validation: Rule => Rule.min(1).max(50),
     }),
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { HeroSlide } from '../data'
+import type { HeroSlide } from '../types'
 import { articleUrl } from '../lib/site'
 
 const ROTATE_MS = 6500

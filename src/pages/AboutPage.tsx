@@ -1,38 +1,43 @@
 import { Link } from 'react-router-dom'
 import { categoryToPathSlug } from '../lib/site'
-import type { NavCategory } from '../data'
-import { CATEGORY_META } from '../data'
+import { InstagramIcon } from '../components/SocialIcons'
 
-const CARDS: { cat: NavCategory; title: string; blurb: string }[] = [
+const CARDS = [
   {
     cat: 'ev',
     title: 'EV & Future Mobility',
     blurb: 'Battery systems, charging architecture, range physics, EV policy.',
+    bar: '#04A777',
   },
   {
     cat: 'launch',
     title: 'Vehicle Launches',
     blurb: 'Engineering decisions behind new products, not just specifications.',
+    bar: '#C0000A',
   },
   {
     cat: 'engineering',
     title: 'Engineering Deep Dives',
     blurb: 'How vehicles work at component and system level.',
+    bar: '#6B3FA0',
   },
   {
     cat: 'motorsport',
     title: 'Motorsport',
     blurb: 'F1, MotoGP, WSBK, INRC, MMSC — with technical analysis.',
+    bar: '#F25F5C',
   },
   {
     cat: 'twowheeler',
     title: 'Two-Wheelers',
     blurb: 'India’s most important vehicle segment, with engineering depth.',
+    bar: '#007FFF',
   },
   {
     cat: 'industry',
     title: 'Industry & Policy',
     blurb: 'FAME, PLI incentives, component localisation, OEM strategy.',
+    bar: '#FF9F1C',
   },
 ]
 
@@ -55,7 +60,7 @@ export function AboutPage() {
             key={c.cat}
             to={`/category/${categoryToPathSlug(c.cat)}`}
             className="cat-mini-card"
-            style={{ textDecoration: 'none', borderTop: `2px solid ${CATEGORY_META[c.cat].bar}` }}
+            style={{ textDecoration: 'none', borderTop: `2px solid ${c.bar}` }}
           >
             <div className="cat-mini-title">{c.title}</div>
             <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 8 }}>{c.blurb}</p>
@@ -84,8 +89,8 @@ export function AboutPage() {
           <p style={{ color: 'var(--muted)', marginTop: 8, fontSize: 14 }}>
             Builds AutoXec&apos;s technical voice and verification workflow — from workshop manuals to racetrack data.
           </p>
-          <a href="https://instagram.com/autoxec" target="_blank" rel="noreferrer" className="action-btn" style={{ marginTop: 12 }}>
-            Follow on Instagram
+          <a href="https://instagram.com/autoxec" target="_blank" rel="noreferrer" className="social-btn" style={{ marginTop: 12 }}>
+            <InstagramIcon /> Follow on Instagram
           </a>
         </div>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: 20, borderRadius: 6 }}>

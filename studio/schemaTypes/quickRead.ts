@@ -2,9 +2,9 @@ import { defineField, defineType } from 'sanity'
 
 
 
-export const article = defineType({
-  name: 'article',
-  title: 'Blog Article',
+export const quickRead = defineType({
+  name: 'quickRead',
+  title: 'Quick Read',
   type: 'document',
   fieldsets: [
     {

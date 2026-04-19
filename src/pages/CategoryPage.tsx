@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
 import { useArticlesInCategoryOrEmpty, useSiteData } from '../context/SiteDataContext'
@@ -12,8 +12,9 @@ export function CategoryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const showToast = useToast()
   const [upvoted, setUpvoted] = useState<Record<string, boolean>>({})
+  const [page, setPage] = useState(1)
 
-  const { categories } = useSiteData()
+  const { categories, categoryPageLimit } = useSiteData()
 
   const cat = slug ? pathSlugToCategory(slug) : null
   const sort = searchParams.get('sort') ?? 'latest'
@@ -59,8 +60,27 @@ export function CategoryPage() {
     barColor: '#6B3FA0',
   }
   
-  const featured = items[0]
-  const rest = items.slice(1)
+  const featured = useMemo(() => {
+    if (metaCategory?.featuredArticleSlug) {
+      return items.find((a) => a.slug === metaCategory.featuredArticleSlug) || items[0]
+    }
+    return items[0]
+  }, [items, metaCategory])
+
+  const rest = useMemo(() => {
+    if (!featured) return items
+    return items.filter((a) => a.slug !== featured.slug)
+  }, [items, featured])
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(rest.length / categoryPageLimit)), [rest, categoryPageLimit])
+
+  const paginatedRest = useMemo(() => {
+    const start = (page - 1) * categoryPageLimit
+    return rest.slice(start, start + categoryPageLimit)
+  }, [rest, page, categoryPageLimit])
+
+  // Reset page when category or sort changes
+  useEffect(() => { setPage(1) }, [cat, sort])
 
   return (
     <div>
@@ -135,22 +155,57 @@ export function CategoryPage() {
       </div>
 
       <div className="page-shell-wide" style={{ paddingTop: 0 }}>
-        <div className="articles-grid">
-          {rest.map((a) => (
-            <ArticleCard
-              key={a.id}
-              article={a}
-              upvoted={!!upvoted[a.id]}
-              onUpvote={(e) => toggleUpvote(a.id, e)}
-              onShare={shareArticle}
-            />
-          ))}
-        </div>
-        <div className="load-more-wrap">
-          <button type="button" className="action-btn load-more-btn" onClick={() => showToast('Loading more…')}>
-            Load More Articles
-          </button>
-        </div>
+        {rest.length === 0 && !featured ? (
+          <div style={{
+            color: 'var(--border)',
+            padding: '48px 24px',
+            border: '1px dashed var(--border)',
+            borderRadius: '8px',
+            textAlign: 'center',
+            fontFamily: 'monospace',
+            fontSize: 12,
+            letterSpacing: 2
+          }}>
+            [ NO ARTICLES YET ]
+          </div>
+        ) : (
+          <>
+            <div className="articles-grid">
+              {paginatedRest.map((a) => (
+                <ArticleCard
+                  key={a.id}
+                  article={a}
+                  upvoted={!!upvoted[a.id]}
+                  onUpvote={(e) => toggleUpvote(a.id, e)}
+                  onShare={shareArticle}
+                />
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination-row">
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={page <= 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                >
+                  ← PREV
+                </button>
+                <span className="pagination-info">
+                  PAGE {page} OF {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                >
+                  NEXT →
+                </button>
+              </div>
+            )}
+          </>
+        )}
         <p className="mono" style={{ fontSize: 11, color: 'var(--dim)', marginTop: 24 }}>
           Other categories:{' '}
           {categories

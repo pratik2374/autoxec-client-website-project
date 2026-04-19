@@ -1,6 +1,6 @@
 import type { MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { Article } from '../data'
+import type { Article } from '../types'
 import { articleUrl, categoryToPathSlug } from '../lib/site'
 
 function formatVotes(n: number): string {

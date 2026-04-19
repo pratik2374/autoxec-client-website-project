@@ -30,3 +30,7 @@ export function queryValueToCategory(value: string | null): string {
 export function articleUrl(slug: string): string {
   return `/article/${slug}`
 }
+
+export function quickReadUrl(slug: string): string {
+  return `/quick-read/${slug}`
+}

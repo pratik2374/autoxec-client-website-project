@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { categoryToPathSlug } from '../lib/site'
-import type { NavCategory } from '../data'
+import type { NavCategory } from '../types'
+import { InstagramIcon, YouTubeIcon, LinkedInIcon } from './SocialIcons'
 
 const COVERAGE: { label: string; cat: NavCategory }[] = [
   { label: 'EV & Future Mobility', cat: 'ev' },
@@ -76,10 +77,10 @@ export function SiteFooter() {
         <div className="footer-copy">© 2026 AutoXec · media@autoxec.in · autoxec.in</div>
         <div className="social-links">
           <a className="social-btn" href="https://instagram.com/autoxec" target="_blank" rel="noreferrer">
-            @autoxec
+            <InstagramIcon /> @autoxec
           </a>
           <a className="social-btn" href="https://youtube.com/@autoxec" target="_blank" rel="noreferrer">
-            YouTube
+            <YouTubeIcon /> YouTube
           </a>
           <a
             className="social-btn"
@@ -87,7 +88,7 @@ export function SiteFooter() {
             target="_blank"
             rel="noreferrer"
           >
-            LinkedIn
+            <LinkedInIcon /> LinkedIn
           </a>
         </div>
       </div>

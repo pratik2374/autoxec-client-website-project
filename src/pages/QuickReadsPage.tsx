@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSiteData } from '../context/SiteDataContext'
-import { articleUrl } from '../lib/site'
+import { quickReadUrl } from '../lib/site'
 
 export function QuickReadsPage() {
   const { stories } = useSiteData()
@@ -13,7 +13,7 @@ export function QuickReadsPage() {
       </p>
       <div className="stories-row" style={{ flexWrap: 'wrap', paddingBottom: 40 }}>
         {stories.map((s) => (
-          <Link key={s.slug} to={articleUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
+          <Link key={s.slug} to={quickReadUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
             <div className="story-thumb">
               <div className="story-bg story-bg--photo">
                 <img src={s.imageUrl} alt="" className="story-photo" loading="lazy" decoding="async" />

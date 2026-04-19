@@ -47,6 +47,13 @@ export const category = defineType({
       fieldset: 'styling',
       description: 'Used for top border markers (e.g., #1A7A3C)',
     }),
+    defineField({
+      name: 'featuredArticle',
+      title: 'Featured Article',
+      type: 'reference',
+      to: [{ type: 'article' }],
+      description: 'Optional: Manually select a featured article to override standard chronological display on the Category page.',
+    }),
   ],
   preview: {
     select: { title: 'title', subtitle: 'slug.current' },

@@ -15,6 +15,10 @@ export const articleFields = /* groq */ `
   upvotes,
   imageUrl,
   mainImage,
+  authorName,
+  authorBio,
+  relatedPostsStrategy,
+  "relatedPostsManualSlugs": relatedPostsManual[]->slug.current,
   published,
   _updatedAt,
   _createdAt
@@ -22,9 +26,28 @@ export const articleFields = /* groq */ `
 
 export const siteConfigQuery = /* groq */ `
   *[_type == "siteConfig"][0]{
+    navigation[]{
+      title,
+      linkType,
+      path,
+      "category": category->{
+        "slug": slug.current,
+        title
+      },
+      "dropdownItems": dropdownItems[]->{
+        "slug": slug.current,
+        title
+      }
+    },
+    typographyConfig {
+      fontFamily,
+      lineHeight,
+      letterSpacing
+    },
     tickerItems,
     exploreTopics,
     latestStoriesLimit,
+    categoryPageLimit,
     heroConfig {
       strategy,
       limit,
@@ -80,6 +103,12 @@ export const allArticlesQuery = /* groq */ `
   }
 `
 
+export const allQuickReadsQuery = /* groq */ `
+  *[_type == "quickRead"] | order(coalesce(published, _createdAt) desc) {
+    ${articleFields}
+  }
+`
+
 export const allCategoriesQuery = /* groq */ `
   *[_type == "category"] | order(title asc) {
     "slug": slug.current,
@@ -87,6 +116,7 @@ export const allCategoriesQuery = /* groq */ `
     description,
     badgeClass,
     accentColor,
-    barColor
+    barColor,
+    "featuredArticleSlug": featuredArticle->slug.current
   }
 `

@@ -5,7 +5,7 @@ import type {
   NavCategory,
   StoryCard,
   TrendingRow,
-} from '../../data'
+} from '../../types'
 import { categoryToPathSlug } from '../site'
 import { urlForImage } from './image'
 
@@ -22,6 +22,10 @@ export type RawArticle = {
   seoDescription?: string
   tags?: string[]
   upvotes?: number
+  authorName?: string
+  authorBio?: string
+  relatedPostsStrategy?: 'auto' | 'manual' | 'none'
+  relatedPostsManualSlugs?: string[]
   imageUrl?: string
   mainImage?: Parameters<typeof urlForImage>[0]
   published?: string
@@ -36,6 +40,7 @@ export type RawDynamicCategory = {
   badgeClass?: string
   accentColor?: string
   barColor?: string
+  featuredArticleSlug?: string
 }
 
 export type RawCategoryRow = {
@@ -45,10 +50,25 @@ export type RawCategoryRow = {
   manualArticles?: RawArticle[]
 }
 
+export type RawNavigationItem = {
+  title: string
+  linkType: 'path' | 'category' | 'dropdown'
+  path?: string
+  category?: { slug: string; title: string }
+  dropdownItems?: { slug: string; title: string }[]
+}
+
 export type RawSiteConfig = {
+  navigation?: RawNavigationItem[]
+  typographyConfig?: {
+    fontFamily?: string
+    lineHeight?: number
+    letterSpacing?: number
+  }
   tickerItems?: string[]
   exploreTopics?: string[]
   latestStoriesLimit?: number
+  categoryPageLimit?: number
   heroConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
   heroSideConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
   quickReadsConfig?: { strategy?: 'latest' | 'popular' | 'manual', limit?: number, manualArticles?: RawArticle[] }
@@ -98,6 +118,11 @@ export function mapRawToArticle(raw: RawArticle): Article | null {
     meta: 'PREETAM · AUTOXEC',
     thumbLabel: 'AX',
     thumbGradient: 'linear-gradient(135deg,#1a0f30,#2d1060)',
+    deepDive: (raw.badgeClass as string)?.toLowerCase().includes('engineering') || cat === 'engineering',
+    authorName: raw.authorName,
+    authorBio: raw.authorBio,
+    relatedPostsStrategy: raw.relatedPostsStrategy,
+    relatedPostsManualSlugs: raw.relatedPostsManualSlugs,
     imageUrl: img || raw.imageUrl,
     published: createdDate,
     updated: formatDate(raw._updatedAt),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { useIsDataLoading } from './context/SiteDataContext'
+import { useIsDataLoading, useSiteData } from './context/SiteDataContext'
 import { LoadingScreen } from './components/LoadingScreen'
 import { Layout } from './components/Layout'
 import { AboutPage } from './pages/AboutPage'
@@ -13,6 +13,7 @@ import { CorrectionsPolicyPage, EditorialPolicyPage, PrivacyPage, TermsPage } fr
 import { HomePage } from './pages/HomePage'
 import { MediaKitPage } from './pages/MediaKitPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { GetAdvicePage } from './pages/GetAdvicePage'
 import { QuickReadsPage } from './pages/QuickReadsPage'
 import { SearchPage } from './pages/SearchPage'
 import { SubscribePage } from './pages/SubscribePage'
@@ -34,17 +35,27 @@ export default function App() {
     }
   }, [isDataLoading])
 
+  const { typographyConfig } = useSiteData()
+
   return (
     <>
       {showLoader && (
         <LoadingScreen exiting={exiting} />
       )}
-      <div className={!isDataLoading ? 'app-slide-in' : 'visually-hidden'}>
+      <div 
+        className={!isDataLoading ? 'app-slide-in' : 'visually-hidden'}
+        style={{
+          fontFamily: typographyConfig.fontFamily,
+          lineHeight: typographyConfig.lineHeight,
+          letterSpacing: `${typographyConfig.letterSpacing}px`
+        }}
+      >
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="category/:slug" element={<CategoryPage />} />
             <Route path="article/:slug" element={<ArticlePage />} />
+            <Route path="quick-read/:slug" element={<ArticlePage />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="quick-reads" element={<QuickReadsPage />} />
             <Route path="about" element={<AboutPage />} />
@@ -52,6 +63,7 @@ export default function App() {
             <Route path="community" element={<CommunityPage />} />
             <Route path="subscribe" element={<SubscribePage />} />
             <Route path="contact" element={<ContactPage />} />
+            <Route path="get-advice" element={<GetAdvicePage />} />
             <Route path="privacy" element={<PrivacyPage />} />
             <Route path="terms" element={<TermsPage />} />
             <Route path="editorial-policy" element={<EditorialPolicyPage />} />

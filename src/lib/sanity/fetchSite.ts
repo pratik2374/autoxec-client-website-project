@@ -1,20 +1,10 @@
 import {
-  ARTICLES as STATIC_ARTICLES,
-  FILTER_COUNTS as STATIC_FILTER_COUNTS,
-  HERO_MAIN,
-  HERO_SIDE as STATIC_HERO_SIDE,
-  HERO_SLIDES as STATIC_HERO_SLIDES,
-  STORIES as STATIC_STORIES,
-  TICKER_ITEMS as STATIC_TICKER,
-  TRENDING as STATIC_TRENDING,
-  TOPICS as STATIC_TOPICS,
   type Article,
   type HeroSideItem,
   type HeroSlide,
   type StoryCard,
   type TrendingRow,
-  buildStubPool,
-} from '../../data'
+} from '../../types'
 import { getSanityClient } from './client'
 import { isSanityConfigured } from './config'
 import {
@@ -28,7 +18,7 @@ import {
   type RawSiteConfig,
   type RawDynamicCategory,
 } from './map'
-import { allArticlesQuery, siteConfigQuery, allCategoriesQuery } from './queries'
+import { allArticlesQuery, siteConfigQuery, allCategoriesQuery, allQuickReadsQuery } from './queries'
 
 export type DynamicRow = {
   slug: string
@@ -40,8 +30,22 @@ export type DynamicRow = {
   articles: Article[]
 }
 
+export type NavigationItem = {
+  title: string
+  type: 'path' | 'category' | 'dropdown'
+  path?: string
+  categorySlug?: string
+  dropdownItems?: { slug: string; title: string }[]
+}
+
 export type SiteContent = {
-  source: 'sanity' | 'static'
+  navigation: NavigationItem[]
+  typographyConfig: {
+    fontFamily: string
+    lineHeight: number
+    letterSpacing: number
+  }
+  source: 'sanity' | 'cache'
   categories: RawDynamicCategory[]
   articles: Article[]
   heroSlides: HeroSlide[]
@@ -51,66 +55,70 @@ export type SiteContent = {
   trending: TrendingRow[]
   topics: readonly string[] | string[]
   latestStoriesLimit: number
+  categoryPageLimit: number
   topDynamicRows: DynamicRow[]
   bottomDynamicRows: DynamicRow[]
   filterCounts: Record<string, number>
-  stubPool: Article[]
 }
 
-export function getStaticSiteSnapshot(): SiteContent {
-  const stubPool = buildStubPool({
-    heroMain: HERO_MAIN,
-    heroSide: STATIC_HERO_SIDE,
-    stories: STATIC_STORIES,
-    evMini: [],
-    engMini: [],
-  })
-  return {
-    source: 'static',
-    categories: [],
-    articles: STATIC_ARTICLES,
-    heroSlides: [...STATIC_HERO_SLIDES],
-    heroSide: [...STATIC_HERO_SIDE],
-    stories: [...STATIC_STORIES],
-    tickerItems: STATIC_TICKER,
-    trending: [...STATIC_TRENDING],
-    topics: STATIC_TOPICS,
-    latestStoriesLimit: 6,
-    topDynamicRows: [],
-    bottomDynamicRows: [],
-    filterCounts: { ...STATIC_FILTER_COUNTS },
-    stubPool,
+const CACHE_KEY = 'autoxec_content_cache'
+
+export function getCachedSiteContent(): SiteContent | null {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY)
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      return { ...parsed, source: 'cache' } as SiteContent
+    }
+  } catch (e) {
+    console.error('[Sanity] Failed to parse cache:', e)
+  }
+  return null
+}
+
+export function setCachedSiteContent(content: SiteContent) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(content))
+  } catch (e) {
+    console.warn('[Sanity] Failed to save cache:', e)
   }
 }
 
 export async function loadSiteContent(): Promise<SiteContent> {
   if (!isSanityConfigured()) {
-    return getStaticSiteSnapshot()
+    const cached = getCachedSiteContent()
+    if (cached) return cached
+    throw new Error('Sanity is not configured and no cache is available.')
   }
 
   try {
     const client = getSanityClient()
-    const [rawArticles, siteConfig, allCategories] = await Promise.all([
+    const [rawArticles, rawQuickReads, siteConfig, allCategories] = await Promise.all([
       client.fetch<RawArticle[]>(allArticlesQuery),
+      client.fetch<RawArticle[]>(allQuickReadsQuery),
       client.fetch<RawSiteConfig>(siteConfigQuery),
       client.fetch<RawDynamicCategory[]>(allCategoriesQuery),
     ])
     
     const articlesFromCms = rawArticles.map(mapRawToArticle).filter((a): a is Article => a !== null)
-    const articles = articlesFromCms.length > 0 ? articlesFromCms : STATIC_ARTICLES
+    const articles = articlesFromCms
+
+    const quickReadsFromCms = rawQuickReads.map(mapRawToArticle).filter((a): a is Article => a !== null)
+    const quickReads = quickReadsFromCms
 
     // 1. HERO SLIDES
     const heroStrategy = siteConfig?.heroConfig?.strategy || 'latest'
     const heroManual = siteConfig?.heroConfig?.manualArticles
     const resolvedHeroArticles = resolveStrategyArticles(articles, heroStrategy, heroManual, undefined, 5)
-    const heroSlides = resolvedHeroArticles.length > 0 ? resolvedHeroArticles.map(articleToHeroSlide) : [...STATIC_HERO_SLIDES]
+    // Always provide at least one hero slide or a default to prevent UI crashes if DB is completely empty
+    const heroSlides = resolvedHeroArticles.length > 0 ? resolvedHeroArticles.map(articleToHeroSlide) : []
 
     // 2. HERO SIDE
-    const heroSideStrategy = siteConfig?.heroSideConfig?.strategy || 'latest' // Default for hero side historically was latest/popular? popular was hardcoded before
+    const heroSideStrategy = siteConfig?.heroSideConfig?.strategy || 'latest'
     const heroSideManual = siteConfig?.heroSideConfig?.manualArticles
     const heroSideLimit = siteConfig?.heroSideConfig?.limit || 3
     const resolvedHeroSideArticles = resolveStrategyArticles(articles, heroSideStrategy, heroSideManual, undefined, heroSideLimit)
-    const heroSide = resolvedHeroSideArticles.length > 0 ? resolvedHeroSideArticles.map(a => {
+    const heroSide = resolvedHeroSideArticles.map(a => {
       const k = a.upvotes >= 1000 ? `${(a.upvotes / 1000).toFixed(1)}K` : String(a.upvotes)
       return {
         slug: a.slug,
@@ -120,20 +128,21 @@ export async function loadSiteContent(): Promise<SiteContent> {
         meta: `5 MIN · ${k} ↑`,
         imageUrl: a.imageUrl || '',
       } as HeroSideItem
-    }) : [...STATIC_HERO_SIDE]
+    })
 
     // 3. QUICK READS / STORIES
     const qrStrategy = siteConfig?.quickReadsConfig?.strategy || 'latest'
     const qrManual = siteConfig?.quickReadsConfig?.manualArticles
     const qrLimit = siteConfig?.quickReadsConfig?.limit || 8
-    const resolvedQrArticles = resolveStrategyArticles(articles, qrStrategy, qrManual, undefined, qrLimit)
-    const stories = resolvedQrArticles.length > 0 ? generateStories(resolvedQrArticles, qrStrategy, qrManual, qrLimit) : [...STATIC_STORIES]
+    
+    const resolvedQrArticles = resolveStrategyArticles(quickReads, qrStrategy, qrManual, undefined, qrLimit)
+    const stories = generateStories(resolvedQrArticles, qrStrategy, qrManual, qrLimit)
 
     // 4. TRENDING
     const trendingStrategy = siteConfig?.trendingConfig?.strategy || 'popular'
     const trendingManual = siteConfig?.trendingConfig?.manualArticles
     const trendingLimit = siteConfig?.trendingConfig?.limit || 5
-    const trending = articlesFromCms.length > 0 ? generateTrending(articles, trendingStrategy, trendingManual, trendingLimit) : [...STATIC_TRENDING]
+    const trending = generateTrending(articles, trendingStrategy, trendingManual, trendingLimit)
 
     // 5. TOP DYNAMIC ROWS
     const topDynamicRows: DynamicRow[] = []
@@ -173,30 +182,51 @@ export async function loadSiteContent(): Promise<SiteContent> {
       }
     }
 
-    const filterCounts = articlesFromCms.length > 0 ? generateFilterCounts(articles) : { ...STATIC_FILTER_COUNTS }
+    const filterCounts = generateFilterCounts(articles)
 
     const tickerItems = siteConfig?.tickerItems && siteConfig.tickerItems.length > 0
       ? siteConfig.tickerItems
-      : [...STATIC_TICKER]
+      : []
       
     const topics = siteConfig?.exploreTopics && siteConfig.exploreTopics.length > 0
       ? siteConfig.exploreTopics
-      : [...STATIC_TOPICS]
+      : []
       
     const latestStoriesLimit = siteConfig?.latestStoriesLimit || 6
+    const categoryPageLimit = siteConfig?.categoryPageLimit || 9
 
-    const stubPool = buildStubPool({
-      heroMain: heroSlides[0] ?? HERO_MAIN,
-      heroSide,
-      stories,
-      evMini: [],
-      engMini: [],
-    })
+    const typographyConfig = {
+      fontFamily: siteConfig?.typographyConfig?.fontFamily || "'Barlow', sans-serif",
+      lineHeight: siteConfig?.typographyConfig?.lineHeight || 1.6,
+      letterSpacing: siteConfig?.typographyConfig?.letterSpacing || 0,
+    }
 
-    return {
+    const navigation: NavigationItem[] = []
+    if (siteConfig?.navigation && siteConfig.navigation.length > 0) {
+      for (const item of siteConfig.navigation) {
+        if (item.linkType === 'path') {
+          navigation.push({ title: item.title, type: 'path', path: item.path })
+        } else if (item.linkType === 'category' && item.category) {
+          navigation.push({ title: item.title, type: 'category', categorySlug: item.category.slug })
+        } else if (item.linkType === 'dropdown') {
+          navigation.push({
+            title: item.title,
+            type: 'dropdown',
+            dropdownItems: (item.dropdownItems || []).map(c => ({ slug: c.slug, title: c.title }))
+          })
+        }
+      }
+    }
+
+    // Expose quickreads down into the articles list so ArticlePage can route them 
+    const allMergedArticles = [...articles, ...quickReads]
+
+    const content: SiteContent = {
       source: 'sanity',
+      navigation,
+      typographyConfig,
       categories: allCategories,
-      articles,
+      articles: allMergedArticles,
       heroSlides,
       heroSide,
       stories,
@@ -204,13 +234,20 @@ export async function loadSiteContent(): Promise<SiteContent> {
       trending,
       topics,
       latestStoriesLimit,
+      categoryPageLimit,
       topDynamicRows,
       bottomDynamicRows,
       filterCounts,
-      stubPool,
     }
+    
+    // Save to Cache for Fallback
+    setCachedSiteContent(content)
+
+    return content
   } catch (e) {
-    console.warn('[Sanity] Falling back to static content:', e)
-    return getStaticSiteSnapshot()
+    console.error('[Sanity] Data load failed:', e)
+    const cached = getCachedSiteContent()
+    if (cached) return cached
+    throw new Error('Failed to load site content and no cache is available.')
   }
 }

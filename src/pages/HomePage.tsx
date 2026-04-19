@@ -4,10 +4,10 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { ArticleCard } from '../components/ArticleCard'
 import { HeroCarousel } from '../components/HeroCarousel'
 import { SidebarWidgets } from '../components/SidebarWidgets'
-import type { ArticleCategory } from '../data'
+import type { ArticleCategory } from '../types'
 import { useSiteData } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
-import { articleUrl, categoryToQueryValue, queryValueToCategory } from '../lib/site'
+import { articleUrl, quickReadUrl, categoryToQueryValue, queryValueToCategory } from '../lib/site'
 
 export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -104,7 +104,7 @@ export function HomePage() {
         </div>
         <div className="stories-row">
           {stories.map((s) => (
-            <Link key={s.slug} to={articleUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
+            <Link key={s.slug} to={quickReadUrl(s.slug)} className="story-card" style={{ textDecoration: 'none' }}>
               <div className="story-thumb">
                 <div className="story-bg story-bg--photo">
                   <img src={s.imageUrl} alt="" className="story-photo" loading="lazy" decoding="async" />

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { type Article } from '../types'
 import { PortableText } from '@portabletext/react'
 import { SidebarWidgets } from '../components/SidebarWidgets'
 import { categoryToPathSlug } from '../lib/site'
@@ -8,6 +9,7 @@ import { urlForImage } from '../lib/sanity/image'
 import { useArticleBySlug, useSiteData } from '../context/SiteDataContext'
 import { useToast } from '../context/ToastContext'
 import { NotFoundPage } from './NotFoundPage'
+import { WhatsAppIcon, XIcon, LinkedInIcon, CopyLinkIcon } from '../components/SocialIcons'
 
 const portableTextComponents = {
   types: {
@@ -61,7 +63,6 @@ export function ArticlePage() {
     return <NotFoundPage />
   }
 
-  const related = articles.filter((a) => a.cat === article.cat && a.slug !== article.slug).slice(0, 3)
   const categorySlug = categoryToPathSlug(article.cat)
   const categoryLabel = article.badge
 
@@ -89,7 +90,7 @@ export function ArticlePage() {
         {article.deck ? <p className="page-lead">{article.deck}</p> : null}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
-          <Link to="/author/preetam" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+          <Link to="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit', cursor: 'default' }} onClick={(e) => e.preventDefault()}>
             <span
               style={{
                 width: 40,
@@ -100,7 +101,7 @@ export function ArticlePage() {
               }}
             />
             <span>
-              <span style={{ display: 'block', fontWeight: 600 }}>By Preetam</span>
+              <span style={{ display: 'block', fontWeight: 600 }}>By {article.authorName || 'Preetam'}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--dim)' }}>
                 AutoXec
               </span>
@@ -196,28 +197,18 @@ export function ArticlePage() {
         <h3 className="sidebar-title" style={{ marginTop: 40 }}>
           SHARE THIS ARTICLE
         </h3>
-        <div className="filter-row">
-          <a className="action-btn" href={`https://wa.me/?text=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer">
-            WhatsApp
+        <div className="share-row">
+          <a className="share-btn" href={`https://wa.me/?text=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer">
+            <WhatsAppIcon /> WhatsApp
           </a>
-          <a
-            className="action-btn"
-            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            X
+          <a className="share-btn" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer">
+            <XIcon /> X
           </a>
-          <a
-            className="action-btn"
-            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            LinkedIn
+          <a className="share-btn" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noreferrer">
+            <LinkedInIcon /> LinkedIn
           </a>
-          <button type="button" className="action-btn" onClick={() => share()}>
-            Copy Link
+          <button type="button" className="share-btn" onClick={() => share()}>
+            <CopyLinkIcon /> Copy Link
           </button>
         </div>
 
@@ -234,24 +225,35 @@ export function ArticlePage() {
         <div style={{ marginTop: 40, padding: 20, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6 }}>
           <strong>About the author</strong>
           <p style={{ marginTop: 8, color: 'var(--muted)' }}>
-            Preetam is Founder &amp; Editor of AutoXec — focused on verifiable automotive engineering for Indian readers.
+            {article.authorName === 'Preetam' || !article.authorName
+              ? article.authorBio || 'Preetam is Founder & Editor of AutoXec — focused on verifiable automotive engineering for Indian readers.'
+              : article.authorBio || `Article contributed by ${article.authorName}.`}
           </p>
           <a className="nav-btn" href="https://instagram.com/autoxec" target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 12 }}>
             Follow on Instagram
           </a>
         </div>
 
-        <h3 className="section-label" style={{ marginTop: 40, display: 'block' }}>
-          YOU MIGHT ALSO LIKE
-        </h3>
-        <div className="cat-grid" style={{ marginTop: 16 }}>
-          {related.map((a) => (
-            <Link key={a.slug} to={articleUrl(a.slug)} className="cat-mini-card" style={{ textDecoration: 'none' }}>
-              <div className="cat-mini-title">{a.title}</div>
-              <div className="cat-mini-meta mono">{a.upvotes.toLocaleString('en-IN')} ↑</div>
-            </Link>
-          ))}
-        </div>
+        {article.relatedPostsStrategy !== 'none' && (
+          <>
+            <h3 className="section-label" style={{ marginTop: 40, display: 'block' }}>
+              YOU MIGHT ALSO LIKE
+            </h3>
+            <div className="cat-grid" style={{ marginTop: 16 }}>
+              {(article.relatedPostsStrategy === 'manual' && article.relatedPostsManualSlugs?.length
+                ? article.relatedPostsManualSlugs
+                    .map((msl) => articles.find((ar) => ar.slug === msl))
+                    .filter((ar): ar is Article => !!ar)
+                : articles.filter((a) => a.cat === article.cat && a.slug !== article.slug).slice(0, 3)
+              ).map((a) => (
+                <Link key={a.slug} to={articleUrl(a.slug)} className="cat-mini-card" style={{ textDecoration: 'none' }}>
+                  <div className="cat-mini-title">{a.title}</div>
+                  <div className="cat-mini-meta mono">{a.upvotes.toLocaleString('en-IN')} ↑</div>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
       </article>
 
       <div>

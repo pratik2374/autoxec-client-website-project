@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
+import { InstagramIcon } from '../components/SocialIcons'
 
 const REASONS = [
   { id: 'media', icon: '📧', title: 'Media & Brand Partnerships', desc: 'Media accreditation or brand coverage.' },
@@ -106,8 +107,8 @@ export function ContactPage() {
         <strong>Media:</strong> <a href="mailto:media@autoxec.in">media@autoxec.in</a>
         <br />
         <strong>Instagram:</strong>{' '}
-        <a href="https://instagram.com/autoxec" target="_blank" rel="noreferrer">
-          @autoxec
+        <a className="social-btn" href="https://instagram.com/autoxec" target="_blank" rel="noreferrer" style={{ display: 'inline-flex', marginLeft: 8 }}>
+          <InstagramIcon /> @autoxec
         </a>
         <br />
         <strong>Urgent corrections:</strong>{' '}
