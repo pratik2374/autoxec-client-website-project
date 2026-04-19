@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Article } from '../types'
 import { loadSiteContent, type SiteContent, getCachedSiteContent } from '../lib/sanity/fetchSite'
+import { LoadingScreen } from '../components/LoadingScreen'
 
 const SiteDataContext = createContext<SiteContent | null>(null)
 const SiteLoadingContext = createContext<boolean>(true)
@@ -59,11 +60,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
     // But since LoadingScreen is in components, let's keep it simple: 
     // We must render SiteLoadingContext with `true` and the children, BUT App expects useSiteData to not be null.
     // So we can provide a dummy SiteContent just for the loading phase to avoid crashes, OR we bypass App until we have data.
-    return (
-      <div style={{ height: '100vh', backgroundColor: '#08060F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#fff', fontFamily: 'monospace' }}>INITIALIZING KNOWLEDGE BASE...</p>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   return (
